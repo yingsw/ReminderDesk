@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "任务提醒助手",
+  "version": "0.1.0",
+  "identifier": "com.zj-jdbz.reminder",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "任务提醒助手",
+        "width": 1000,
+        "height": 720,
+        "minWidth": 900,
+        "minHeight": 650,
+        "center": true,
+        "resizable": true
+      }
+    ],
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "浙江巨鼎包装有限公司",
+    "shortDescription": "任务提醒助手 - 浙江巨鼎包装有限公司",
+    "longDescription": "任务提醒助手，支持定时提醒、优先级管理、自定义提醒公式。开发：应圣卫",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "installMode": "currentUser",
+        "languages": ["SimpChinese", "English"]
+      }
+    }
+  }
+}
