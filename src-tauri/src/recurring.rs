@@ -346,7 +346,20 @@ fn calculate_nth_occurrence(
 ) -> Option<DateTime<Local>> {
     match recurrence_type {
         "daily" => {
-            let date = base_date.date_naive() + Duration::days((n * interval) as i64);
+            // 先尝试今天
+            let today = base_date.date_naive();
+            if let Some(today_time) = today.and_hms_opt(time.hour(), time.minute(), 0)
+                .and_then(|dt| dt.and_local_timezone(Local).single())
+            {
+                if today_time > *base_date || n > 0 {
+                    // 今天的时间还没过，或者不是第一次
+                    let date = today + Duration::days((n * interval) as i64);
+                    return date.and_hms_opt(time.hour(), time.minute(), 0)
+                        .and_then(|dt| dt.and_local_timezone(Local).single());
+                }
+            }
+            // 今天的时间已过，从明天开始
+            let date = today + Duration::days(((n + 1) * interval) as i64);
             date.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())
         }
@@ -356,26 +369,27 @@ fn calculate_nth_occurrence(
                 return None;
             }
 
-            let mut current = *base_date;
-            let mut count = 0;
+            let mut current = base_date.date_naive();
+            let mut found = 0;
 
-            loop {
+            // 最多搜索365天
+            for _ in 0..365 {
                 let weekday = current.weekday().num_days_from_monday() as i32;
                 if days.contains(&weekday) {
-                    if count >= n {
-                        return current.date_naive()
-                            .and_hms_opt(time.hour(), time.minute(), 0)
-                            .and_then(|dt| dt.and_local_timezone(Local).single());
+                    if let Some(dt) = current.and_hms_opt(time.hour(), time.minute(), 0)
+                        .and_then(|d| d.and_local_timezone(Local).single())
+                    {
+                        if dt > *base_date {
+                            if found >= n {
+                                return Some(dt);
+                            }
+                            found += 1;
+                        }
                     }
-                    count += 1;
                 }
                 current = current + Duration::days(1);
-
-                // 防止无限循环
-                if current > *base_date + Duration::days(365) {
-                    return None;
-                }
             }
+            None
         }
         "monthly" => {
             // days 存储每月几号
@@ -385,7 +399,7 @@ fn calculate_nth_occurrence(
 
             let mut current_month = base_date.month();
             let mut current_year = base_date.year();
-            let mut count = 0;
+            let mut found = 0;
 
             loop {
                 for &day in days.iter() {
@@ -395,10 +409,10 @@ fn calculate_nth_occurrence(
 
                         if let Some(dt) = dt {
                             if dt > *base_date {
-                                if count >= n {
+                                if found >= n {
                                     return Some(dt);
                                 }
-                                count += 1;
+                                found += 1;
                             }
                         }
                     }
@@ -417,7 +431,17 @@ fn calculate_nth_occurrence(
         }
         "custom" => {
             // 自定义间隔天数
-            let date = base_date.date_naive() + Duration::days((n * interval) as i64);
+            let today = base_date.date_naive();
+            if let Some(today_time) = today.and_hms_opt(time.hour(), time.minute(), 0)
+                .and_then(|dt| dt.and_local_timezone(Local).single())
+            {
+                if today_time > *base_date || n > 0 {
+                    let date = today + Duration::days((n * interval) as i64);
+                    return date.and_hms_opt(time.hour(), time.minute(), 0)
+                        .and_then(|dt| dt.and_local_timezone(Local).single());
+                }
+            }
+            let date = today + Duration::days(((n + 1) * interval) as i64);
             date.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())
         }
