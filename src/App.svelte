@@ -612,76 +612,76 @@
   loadRecurringTemplates();
 </script>
 
-<main style="padding: 16px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
-  <div style="max-width: 1100px; margin: 0 auto;">
+<main style="padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
+  <div style="max-width: 1400px; margin: 0 auto;">
 
     <!-- 标题栏 -->
-    <header style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <div style="width: 48px; height: 48px; background: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-          <span style="font-size: 24px;">⏰</span>
+    <header style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+          <span style="font-size: 22px;">⏰</span>
         </div>
         <div>
-          <h1 style="font-size: 28px; font-weight: 700; color: white; letter-spacing: -0.5px; margin: 0;">任务提醒助手</h1>
+          <h1 style="font-size: 24px; font-weight: 700; color: white; letter-spacing: -0.5px; margin: 0;">任务提醒助手</h1>
           <div style="color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 2px;">浙江巨鼎包装有限公司 · 开发：应圣卫</div>
         </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <button onclick={() => showRecurringModal = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">🔄 循环任务</button>
-        <button onclick={exportData} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📤 导出</button>
-        <button onclick={() => showImportModal = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📥 导入</button>
-        <button onclick={() => showHelp = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📖 帮助</button>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button onclick={() => showRecurringModal = true} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">🔄 循环任务</button>
+        <button onclick={exportData} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📤 导出</button>
+        <button onclick={() => showImportModal = true} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📥 导入</button>
+        <button onclick={() => showHelp = true} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📖 帮助</button>
       </div>
     </header>
 
-    <div style="display: grid; grid-template-columns: 380px 1fr; gap: 16px;">
+    <div style="display: grid; grid-template-columns: 340px 1fr; gap: 12px;">
 
       <!-- 左侧：添加任务 -->
-      <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
-        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
-          <span style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">+</span>
+      <div style="background: white; border-radius: 14px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">+</span>
           添加新任务
         </h2>
 
         <!-- 标题 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务标题 *</label>
-          <input type="text" bind:value={newTitle} placeholder="例如：完成项目报告" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #f8fafc;" />
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">任务标题 *</label>
+          <input type="text" bind:value={newTitle} placeholder="例如：完成项目报告" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #f8fafc;" />
         </div>
 
         <!-- 描述 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务描述</label>
-          <textarea bind:value={newDescription} placeholder="详细描述任务内容..." rows="2" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; resize: none; box-sizing: border-box; background: #f8fafc;"></textarea>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">任务描述</label>
+          <textarea bind:value={newDescription} placeholder="详细描述任务内容..." rows="1" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; resize: none; box-sizing: border-box; background: #f8fafc;"></textarea>
         </div>
 
-        <!-- 优先级 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">优先级</label>
-          <div style="display: flex; gap: 10px;">
-            {#each priorities as p}
-              <button onclick={() => newPriority = p.value} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; background: {newPriority === p.value ? p.color : p.bg}; color: {newPriority === p.value ? 'white' : p.color}; box-shadow: {newPriority === p.value ? '0 4px 12px ' + p.color + '40' : 'none'};">{p.label}</button>
-            {/each}
+        <!-- 优先级和分类（合并一行） -->
+        <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">优先级</label>
+            <select bind:value={newPriority} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: #f8fafc; cursor: pointer;">
+              {#each priorities as p}
+                <option value={p.value}>{p.label}</option>
+              {/each}
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">分类</label>
+            <select bind:value={newCategoryId} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: #f8fafc; cursor: pointer;">
+              <option value={null}>无分类</option>
+              {#each categories as cat}
+                <option value={cat.id}>{cat.name}</option>
+              {/each}
+            </select>
           </div>
         </div>
 
-        <!-- 分类 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类</label>
-          <select bind:value={newCategoryId} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc; cursor: pointer;">
-            <option value={null}>无分类</option>
-            {#each categories as cat}
-              <option value={cat.id}>{cat.name}</option>
-            {/each}
-          </select>
-        </div>
-
         <!-- 完成时间 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">完成时间</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="date" bind:value={newDueDate} style="flex: 1; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc;" />
-            <select bind:value={newDueTime} style="width: 90px; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc; cursor: pointer;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">完成时间</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="date" bind:value={newDueDate} style="flex: 1; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: #f8fafc;" />
+            <select bind:value={newDueTime} style="width: 80px; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: #f8fafc; cursor: pointer;">
               {#each timeOptions as t}
                 <option value={t}>{t}</option>
               {/each}
@@ -690,56 +690,56 @@
         </div>
 
         <!-- 提醒方式 -->
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">提醒方式</label>
-          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-            <button onclick={() => reminderMode = 'builtin'} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'builtin' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'builtin' ? 'white' : '#64748b'};">内置函数</button>
-            <button onclick={() => reminderMode = 'custom'} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'custom' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'custom' ? 'white' : '#64748b'};">自定义公式</button>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px;">提醒方式</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <button onclick={() => reminderMode = 'builtin'} style="flex: 1; padding: 7px 0; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'builtin' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'builtin' ? 'white' : '#64748b'};">内置函数</button>
+            <button onclick={() => reminderMode = 'custom'} style="flex: 1; padding: 7px 0; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'custom' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'custom' ? 'white' : '#64748b'};">自定义公式</button>
           </div>
 
           {#if reminderMode === 'builtin'}
-            <select bind:value={selectedReminderFunction} style="width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; cursor: pointer;">
+            <select bind:value={selectedReminderFunction} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc; cursor: pointer;">
               {#each reminderFunctions as f, i}
                 <option value={i}>{f}</option>
               {/each}
             </select>
           {:else}
-            <input type="text" bind:value={customExpression} placeholder="例如：DueTime-1h" style="width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc;" />
-            <div style="margin-top: 10px; padding: 12px; background: #f1f5f9; border-radius: 10px; font-size: 12px; color: #64748b; line-height: 1.6;">
+            <input type="text" bind:value={customExpression} placeholder="例如：DueTime-1h" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc;" />
+            <div style="margin-top: 8px; padding: 10px; background: #f1f5f9; border-radius: 8px; font-size: 11px; color: #64748b; line-height: 1.5;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600; color: #475569;">可用表达式（点击帮助查看详情）</span>
               </div>
-              <div style="margin-top: 6px;">• DueTime-1h / Date+9h / Tomorrow+9h</div>
+              <div style="margin-top: 4px;">• DueTime-1h / Date+9h / Tomorrow+9h</div>
             </div>
           {/if}
         </div>
 
         <!-- 提醒预览 -->
         {#if !isRecurring}
-        <div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 14px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(102,126,234,0.3);">
-          <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 6px;">
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(102,126,234,0.3);">
+          <div style="color: rgba(255,255,255,0.85); font-size: 11px; margin-bottom: 4px;">
             提醒时间预览
-            <span style="margin-left: 8px; padding: 2px 8px; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 11px;">
+            <span style="margin-left: 6px; padding: 2px 6px; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px;">
               {reminderMode === 'builtin' ? reminderFunctions[selectedReminderFunction] : customExpression}
             </span>
           </div>
-          <div style="color: white; font-size: 22px; font-weight: 700;">{reminderTimeDisplay()}</div>
+          <div style="color: white; font-size: 18px; font-weight: 700;">{reminderTimeDisplay()}</div>
         </div>
         {/if}
 
         <!-- 循环任务设置 -->
-        <div style="margin-bottom: 12px; padding: 12px; background: #f0f9ff; border-radius: 10px; border: 2px solid #bae6fd;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
-            <input type="checkbox" bind:checked={isRecurring} style="width: 16px; height: 16px;" />
-            <span style="font-size: 13px; font-weight: 600; color: #0369a1;">🔄 设为循环任务</span>
+        <div style="margin-bottom: 10px; padding: 10px; background: #f0f9ff; border-radius: 8px; border: 2px solid #bae6fd;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 6px;">
+            <input type="checkbox" bind:checked={isRecurring} style="width: 14px; height: 14px;" />
+            <span style="font-size: 12px; font-weight: 600; color: #0369a1;">🔄 设为循环任务</span>
           </label>
 
           {#if isRecurring}
-            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #bae6fd;">
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #bae6fd;">
               <!-- 循环类型 -->
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">循环周期</label>
-                <select bind:value={recurrenceType} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;">
+              <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">循环周期</label>
+                <select bind:value={recurrenceType} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: white;">
                   {#each recurrenceTypes as rt}
                     <option value={rt.value}>{rt.label}</option>
                   {/each}
@@ -748,21 +748,21 @@
 
               <!-- 间隔 -->
               {#if recurrenceType === 'daily' || recurrenceType === 'custom'}
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">
+                <div style="margin-bottom: 10px;">
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">
                     间隔（每几天）
                   </label>
-                  <input type="number" bind:value={recurrenceInterval} min="1" max="365" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                  <input type="number" bind:value={recurrenceInterval} min="1" max="365" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: white;" />
                 </div>
               {/if}
 
               <!-- 每周几 -->
               {#if recurrenceType === 'weekly'}
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">选择星期</label>
-                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <div style="margin-bottom: 10px;">
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">选择星期</label>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                     {#each weekdayOptions as wd}
-                      <button onclick={() => toggleRecurrenceDay(wd.value)} style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(wd.value) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(wd.value) ? 'white' : '#64748b'};">{wd.label}</button>
+                      <button onclick={() => toggleRecurrenceDay(wd.value)} style="padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(wd.value) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(wd.value) ? 'white' : '#64748b'};">{wd.label}</button>
                     {/each}
                   </div>
                 </div>
@@ -770,157 +770,157 @@
 
               <!-- 每月几号 -->
               {#if recurrenceType === 'monthly'}
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">选择日期（可多选）</label>
-                  <div style="display: flex; gap: 4px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;">
+                <div style="margin-bottom: 10px;">
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">选择日期（可多选）</label>
+                  <div style="display: flex; gap: 3px; flex-wrap: wrap; max-height: 60px; overflow-y: auto;">
                     {#each monthDayOptions as day}
-                      <button onclick={() => toggleRecurrenceDay(day)} style="width: 32px; height: 32px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(day) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(day) ? 'white' : '#64748b'};">{day}</button>
+                      <button onclick={() => toggleRecurrenceDay(day)} style="width: 28px; height: 28px; border-radius: 5px; font-size: 10px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(day) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(day) ? 'white' : '#64748b'};">{day}</button>
                     {/each}
                   </div>
                 </div>
               {/if}
 
               <!-- 结束条件 -->
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">结束条件</label>
-                <div style="display: flex; gap: 8px;">
-                  <button onclick={() => endType = 'never'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'never' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'never' ? 'white' : '#64748b'};">永不</button>
-                  <button onclick={() => endType = 'count'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'count' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'count' ? 'white' : '#64748b'};">次数</button>
-                  <button onclick={() => endType = 'date'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'date' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'date' ? 'white' : '#64748b'};">日期</button>
+              <div style="margin-bottom: 10px;">
+                <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">结束条件</label>
+                <div style="display: flex; gap: 6px;">
+                  <button onclick={() => endType = 'never'} style="flex: 1; padding: 6px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'never' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'never' ? 'white' : '#64748b'};">永不</button>
+                  <button onclick={() => endType = 'count'} style="flex: 1; padding: 6px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'count' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'count' ? 'white' : '#64748b'};">次数</button>
+                  <button onclick={() => endType = 'date'} style="flex: 1; padding: 6px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'date' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'date' ? 'white' : '#64748b'};">日期</button>
                 </div>
               </div>
 
               {#if endType === 'count'}
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">重复次数</label>
-                  <input type="number" bind:value={endCount} min="1" max="999" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                <div style="margin-bottom: 10px;">
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">重复次数</label>
+                  <input type="number" bind:value={endCount} min="1" max="999" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: white;" />
                 </div>
               {/if}
 
               {#if endType === 'date'}
-                <div style="margin-bottom: 12px;">
-                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">结束日期</label>
-                  <input type="date" bind:value={endDate} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                <div style="margin-bottom: 10px;">
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">结束日期</label>
+                  <input type="date" bind:value={endDate} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: white;" />
                 </div>
               {/if}
             </div>
           {/if}
 
           <!-- 立即生成选项 -->
-          <div style="margin-top: 12px; padding: 10px; background: #fef3c7; border-radius: 8px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="checkbox" bind:checked={generateFirstTask} style="width: 16px; height: 16px;" />
-              <span style="font-size: 12px; font-weight: 600; color: #92400e;">立即生成第一个任务</span>
+          <div style="margin-top: 10px; padding: 8px; background: #fef3c7; border-radius: 6px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" bind:checked={generateFirstTask} style="width: 14px; height: 14px;" />
+              <span style="font-size: 11px; font-weight: 600; color: #92400e;">立即生成第一个任务</span>
             </label>
-            <p style="margin: 6px 0 0 0; font-size: 11px; color: #a16207;">
+            <p style="margin: 4px 0 0 0; font-size: 10px; color: #a16207;">
               {generateFirstTask ? '将在今天/下个周期创建第一个任务' : '等到下个周期再自动创建任务'}
             </p>
           </div>
         </div>
 
         <!-- 添加按钮 -->
-        <button onclick={isRecurring ? addRecurringTask : addTask} disabled={loading || !newTitle.trim()} style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 16px; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; opacity: {loading || !newTitle.trim() ? '0.6' : '1'}; transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);">
+        <button onclick={isRecurring ? addRecurringTask : addTask} disabled={loading || !newTitle.trim()} style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 14px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; opacity: {loading || !newTitle.trim() ? '0.6' : '1'}; transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);">
           {loading ? '添加中...' : isRecurring ? '+ 添加循环任务' : '+ 添加任务'}
         </button>
       </div>
 
       <!-- 右侧：任务列表 -->
-      <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+      <div style="background: white; border-radius: 16px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
 
         <!-- 分类管理 -->
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-          <button onclick={openAddCategory} style="padding: 8px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 10px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;">+ 新建</button>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <button onclick={openAddCategory} style="padding: 6px 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600;">+ 新建</button>
 
           <!-- 分类列表（可编辑） -->
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button onclick={() => filterByCategory(null)} style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedCategory === null ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedCategory === null ? 'white' : '#64748b'};">全部</button>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <button onclick={() => filterByCategory(null)} style="padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {selectedCategory === null ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedCategory === null ? 'white' : '#64748b'};">全部</button>
             {#each categories as cat}
-              <div style="display: flex; align-items: center; gap: 2px;">
-                <button onclick={() => filterByCategory(cat.id)} style="padding: 6px 12px; border-radius: 8px 0 0 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedCategory === cat.id ? cat.color : '#f1f5f9'}; color: {selectedCategory === cat.id ? 'white' : '#64748b'};">{cat.name}</button>
-                <button onclick={() => openEditCategory(cat)} style="padding: 6px 8px; border-radius: 0 8px 8px 0; font-size: 12px; cursor: pointer; border: none; background: {selectedCategory === cat.id ? cat.color : '#e2e8f0'}; color: {selectedCategory === cat.id ? 'white' : '#64748b'};" title="编辑分类">✏️</button>
+              <div style="display: flex; align-items: center; gap: 1px;">
+                <button onclick={() => filterByCategory(cat.id)} style="padding: 5px 10px; border-radius: 6px 0 0 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {selectedCategory === cat.id ? cat.color : '#f1f5f9'}; color: {selectedCategory === cat.id ? 'white' : '#64748b'};">{cat.name}</button>
+                <button onclick={() => openEditCategory(cat)} style="padding: 5px 6px; border-radius: 0 6px 6px 0; font-size: 11px; cursor: pointer; border: none; background: {selectedCategory === cat.id ? cat.color : '#e2e8f0'}; color: {selectedCategory === cat.id ? 'white' : '#64748b'};" title="编辑分类">✏️</button>
               </div>
             {/each}
           </div>
         </div>
 
         <!-- 状态筛选 -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-          <button onclick={() => filterByStatus('all')} style="flex: 1; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'all' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedStatus === 'all' ? 'white' : '#64748b'};">全部 ({totalReminders})</button>
-          <button onclick={() => filterByStatus('pending')} style="flex: 1; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'pending' ? '#f97316' : '#f1f5f9'}; color: {selectedStatus === 'pending' ? 'white' : '#64748b'};">待办</button>
-          <button onclick={() => filterByStatus('completed')} style="flex: 1; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'completed' ? '#22c55e' : '#f1f5f9'}; color: {selectedStatus === 'completed' ? 'white' : '#64748b'};">已完成</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+          <button onclick={() => filterByStatus('all')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'all' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedStatus === 'all' ? 'white' : '#64748b'};">全部 ({totalReminders})</button>
+          <button onclick={() => filterByStatus('pending')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'pending' ? '#f97316' : '#f1f5f9'}; color: {selectedStatus === 'pending' ? 'white' : '#64748b'};">待办</button>
+          <button onclick={() => filterByStatus('completed')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'completed' ? '#22c55e' : '#f1f5f9'}; color: {selectedStatus === 'completed' ? 'white' : '#64748b'};">已完成</button>
         </div>
 
-        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">任务列表</h2>
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0;">任务列表</h2>
 
         <!-- 任务列表 -->
-        <div style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-right: 6px;">
           {#each reminders as reminder (reminder.id)}
-            <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 18px; transition: all 0.2s; {reminder.is_completed ? 'opacity: 0.6;' : ''}">
-              <div style="display: flex; align-items: flex-start; gap: 14px;">
+            <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; transition: all 0.2s; {reminder.is_completed ? 'opacity: 0.6;' : ''}">
+              <div style="display: flex; align-items: flex-start; gap: 10px;">
                 <!-- 优先级 -->
-                <div style="width: 14px; height: 14px; border-radius: 50%; background: {getPriority(reminder.priority).color}; margin-top: 4px; box-shadow: 0 2px 8px {getPriority(reminder.priority).color}40;"></div>
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: {getPriority(reminder.priority).color}; margin-top: 3px; box-shadow: 0 2px 8px {getPriority(reminder.priority).color}40;"></div>
                 <!-- 内容 -->
                 <div style="flex: 1; min-width: 0;">
-                  <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.template_id ? '🔄 ' : ''}{reminder.title}</h3>
+                  <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 3px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.template_id ? '🔄 ' : ''}{reminder.title}</h3>
                   {#if reminder.description}
-                    <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">{reminder.description}</p>
+                    <p style="font-size: 12px; color: #64748b; margin: 0 0 6px 0;">{reminder.description}</p>
                   {/if}
-                  <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
+                  <div style="display: flex; align-items: center; gap: 8px; font-size: 11px;">
                     {#if reminder.category_name}
-                      <span style="background: {reminder.category_color || '#3b82f6'}20; color: {reminder.category_color || '#3b82f6'}; padding: 4px 10px; border-radius: 6px; font-weight: 600;">{reminder.category_name}</span>
+                      <span style="background: {reminder.category_color || '#3b82f6'}20; color: {reminder.category_color || '#3b82f6'}; padding: 3px 8px; border-radius: 5px; font-weight: 600;">{reminder.category_name}</span>
                     {/if}
-                    <span style="background: {getPriority(reminder.priority).bg}; color: {getPriority(reminder.priority).color}; padding: 4px 10px; border-radius: 6px; font-weight: 600;">{getPriority(reminder.priority).label}</span>
+                    <span style="background: {getPriority(reminder.priority).bg}; color: {getPriority(reminder.priority).color}; padding: 3px 8px; border-radius: 5px; font-weight: 600;">{getPriority(reminder.priority).label}</span>
                     <span style="color: #94a3b8;">{formatDate(reminder.due_time)}</span>
                     <span style="color: {reminder.is_completed ? '#22c55e' : new Date(reminder.due_time) < new Date() ? '#ef4444' : '#f97316'}; font-weight: 600;">{getRemaining(reminder.due_time, reminder.is_completed)}</span>
                   </div>
                 </div>
                 <!-- 操作 -->
-                <div style="display: flex; gap: 6px;">
-                  <button onclick={() => openEditModal(reminder)} style="width: 32px; height: 32px; border-radius: 8px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 14px;">✏️</button>
+                <div style="display: flex; gap: 4px;">
+                  <button onclick={() => openEditModal(reminder)} style="width: 28px; height: 28px; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 12px;">✏️</button>
                   {#if !reminder.is_completed}
-                    <button onclick={() => completeTask(reminder.id)} style="width: 32px; height: 32px; border-radius: 8px; background: #22c55e; color: white; border: none; cursor: pointer; font-size: 14px;">✓</button>
+                    <button onclick={() => completeTask(reminder.id)} style="width: 28px; height: 28px; border-radius: 6px; background: #22c55e; color: white; border: none; cursor: pointer; font-size: 12px;">✓</button>
                   {/if}
-                  <button onclick={() => deleteTask(reminder.id)} style="width: 32px; height: 32px; border-radius: 8px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 14px;">×</button>
+                  <button onclick={() => deleteTask(reminder.id)} style="width: 28px; height: 28px; border-radius: 6px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 12px;">×</button>
                 </div>
               </div>
             </div>
           {:else}
-            <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
-              <span style="font-size: 64px;">📝</span>
-              <p style="margin-top: 16px; font-size: 16px;">暂无任务，添加一个试试吧</p>
+            <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+              <span style="font-size: 48px;">📝</span>
+              <p style="margin-top: 12px; font-size: 14px;">暂无任务，添加一个试试吧</p>
             </div>
           {/each}
         </div>
 
         <!-- 分页 -->
         {#if totalPages > 1}
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 2px solid #e2e8f0;">
             <!-- 左：每页条数 -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; color: #64748b;">每页：</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 12px; color: #64748b;">每页：</span>
               {#each pageSizeOptions as size}
-                <button onclick={() => changePageSize(size)} style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {pageSize === size ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {pageSize === size ? 'white' : '#64748b'};">{size}</button>
+                <button onclick={() => changePageSize(size)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {pageSize === size ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {pageSize === size ? 'white' : '#64748b'};">{size}</button>
               {/each}
             </div>
             <!-- 右：页码 -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button onclick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} style="padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === 1 ? '0.5' : '1'};">上一页</button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button onclick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} style="padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === 1 ? '0.5' : '1'};">上一页</button>
               {#if currentPage > 2}
-                <button onclick={() => goToPage(1)} style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">1</button>
+                <button onclick={() => goToPage(1)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">1</button>
                 <span style="color: #94a3b8;">...</span>
               {/if}
               {#if currentPage > 1}
-                <button onclick={() => goToPage(currentPage - 1)} style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{currentPage - 1}</button>
+                <button onclick={() => goToPage(currentPage - 1)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{currentPage - 1}</button>
               {/if}
-              <span style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">{currentPage}</span>
+              <span style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">{currentPage}</span>
               {#if currentPage < totalPages}
-                <button onclick={() => goToPage(currentPage + 1)} style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{currentPage + 1}</button>
+                <button onclick={() => goToPage(currentPage + 1)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{currentPage + 1}</button>
               {/if}
               {#if currentPage < totalPages - 1}
                 <span style="color: #94a3b8;">...</span>
-                <button onclick={() => goToPage(totalPages)} style="padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{totalPages}</button>
+                <button onclick={() => goToPage(totalPages)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">{totalPages}</button>
               {/if}
-              <button onclick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} style="padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === totalPages ? '0.5' : '1'};">下一页</button>
+              <button onclick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} style="padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === totalPages ? '0.5' : '1'};">下一页</button>
             </div>
           </div>
         {/if}
@@ -930,30 +930,30 @@
     <!-- 分类管理弹窗 -->
   {#if showCategoryModal}
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showCategoryModal = false}>
-      <div style="background: white; border-radius: 20px; padding: 28px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
-        <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 20px 0;">{editingCategory ? '编辑分类' : '新建分类'}</h2>
+      <div style="background: white; border-radius: 16px; padding: 20px; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 14px 0;">{editingCategory ? '编辑分类' : '新建分类'}</h2>
 
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">分类名称</label>
-          <input type="text" bind:value={newCategoryName} placeholder="输入分类名称" style="width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;" />
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类名称</label>
+          <input type="text" bind:value={newCategoryName} placeholder="输入分类名称" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;" />
         </div>
 
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">分类颜色</label>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类颜色</label>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             {#each presetColors as color}
-              <button onclick={() => newCategoryColor = color} style="width: 32px; height: 32px; border-radius: 8px; border: 3px solid {newCategoryColor === color ? '#1e293b' : 'transparent'}; background: {color}; cursor: pointer;"></button>
+              <button onclick={() => newCategoryColor = color} style="width: 28px; height: 28px; border-radius: 6px; border: 2px solid {newCategoryColor === color ? '#1e293b' : 'transparent'}; background: {color}; cursor: pointer;"></button>
             {/each}
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-          <button onclick={() => showCategoryModal = false} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
-          <button onclick={saveCategory} disabled={!newCategoryName.trim()} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {newCategoryName.trim() ? '1' : '0.5'};">保存</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick={() => showCategoryModal = false} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
+          <button onclick={saveCategory} disabled={!newCategoryName.trim()} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {newCategoryName.trim() ? '1' : '0.5'};">保存</button>
         </div>
 
         {#if editingCategory}
-          <button onclick={() => { deleteCategory(editingCategory.id); showCategoryModal = false; }} style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: #fef2f2; color: #ef4444;">删除此分类</button>
+          <button onclick={() => { deleteCategory(editingCategory.id); showCategoryModal = false; }} style="width: 100%; margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: #fef2f2; color: #ef4444;">删除此分类</button>
         {/if}
       </div>
     </div>
@@ -962,33 +962,33 @@
   <!-- 导入弹窗 -->
   {#if showImportModal}
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showImportModal = false}>
-      <div style="background: white; border-radius: 20px; padding: 28px; width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0;">📥 导入数据</h2>
-          <button onclick={() => showImportModal = false} style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 20px; color: #64748b;">×</button>
+      <div style="background: white; border-radius: 16px; padding: 20px; width: 420px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">📥 导入数据</h2>
+          <button onclick={() => showImportModal = false} style="width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 18px; color: #64748b;">×</button>
         </div>
 
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">选择文件</label>
-          <input type="file" accept=".json" onchange={handleFileImport} style="width: 100%; padding: 10px; border: 2px dashed #e2e8f0; border-radius: 10px; font-size: 14px; background: #f8fafc; cursor: pointer;" />
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px;">选择文件</label>
+          <input type="file" accept=".json" onchange={handleFileImport} style="width: 100%; padding: 8px; border: 2px dashed #e2e8f0; border-radius: 8px; font-size: 12px; background: #f8fafc; cursor: pointer;" />
         </div>
 
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">或粘贴JSON数据</label>
-          <textarea bind:value={importJsonText} placeholder="粘贴导出的JSON数据..." rows="6" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; resize: none; box-sizing: border-box; font-family: monospace;"></textarea>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 6px;">或粘贴JSON数据</label>
+          <textarea bind:value={importJsonText} placeholder="粘贴导出的JSON数据..." rows="4" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; resize: none; box-sizing: border-box; font-family: monospace;"></textarea>
         </div>
 
-        <div style="margin-bottom: 20px; padding: 12px; background: #f8fafc; border-radius: 10px;">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-            <input type="checkbox" bind:checked={importMerge} style="width: 18px; height: 18px;" />
-            <span style="font-size: 13px; color: #475569;">合并导入（保留现有数据）</span>
+        <div style="margin-bottom: 14px; padding: 10px; background: #f8fafc; border-radius: 8px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" bind:checked={importMerge} style="width: 16px; height: 16px;" />
+            <span style="font-size: 12px; color: #475569;">合并导入（保留现有数据）</span>
           </label>
-          <p style="margin: 8px 0 0 0; font-size: 12px; color: #94a3b8;">不勾选将清空现有数据后导入</p>
+          <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">不勾选将清空现有数据后导入</p>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-          <button onclick={() => showImportModal = false} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
-          <button onclick={importData} disabled={!importJsonText.trim()} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {importJsonText.trim() ? '1' : '0.5'};">导入</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick={() => showImportModal = false} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
+          <button onclick={importData} disabled={!importJsonText.trim()} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {importJsonText.trim() ? '1' : '0.5'};">导入</button>
         </div>
       </div>
     </div>
@@ -997,43 +997,45 @@
   <!-- 编辑任务弹窗 -->
   {#if showEditModal}
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showEditModal = false}>
-      <div style="background: white; border-radius: 16px; padding: 24px; width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
-        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 20px 0;">✏️ 编辑任务</h2>
+      <div style="background: white; border-radius: 14px; padding: 18px; width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 14px 0;">✏️ 编辑任务</h2>
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务标题 *</label>
-          <input type="text" bind:value={editTitle} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;" />
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">任务标题 *</label>
+          <input type="text" bind:value={editTitle} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;" />
         </div>
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务描述</label>
-          <textarea bind:value={editDescription} rows="2" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; resize: none; box-sizing: border-box;"></textarea>
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">任务描述</label>
+          <textarea bind:value={editDescription} rows="1" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; resize: none; box-sizing: border-box;"></textarea>
         </div>
 
-        <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">优先级</label>
-          <div style="display: flex; gap: 8px;">
-            {#each priorities as p}
-              <button onclick={() => editPriority = p.value} style="flex: 1; padding: 8px 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; background: {editPriority === p.value ? p.color : p.bg}; color: {editPriority === p.value ? 'white' : p.color};">{p.label}</button>
-            {/each}
+        <!-- 优先级和分类（合并一行） -->
+        <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">优先级</label>
+            <select bind:value={editPriority} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white; cursor: pointer;">
+              {#each priorities as p}
+                <option value={p.value}>{p.label}</option>
+              {/each}
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">分类</label>
+            <select bind:value={editCategoryId} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white; cursor: pointer;">
+              <option value={null}>无分类</option>
+              {#each categories as cat}
+                <option value={cat.id}>{cat.name}</option>
+              {/each}
+            </select>
           </div>
         </div>
 
         <div style="margin-bottom: 14px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类</label>
-          <select bind:value={editCategoryId} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: white; cursor: pointer;">
-            <option value={null}>无分类</option>
-            {#each categories as cat}
-              <option value={cat.id}>{cat.name}</option>
-            {/each}
-          </select>
-        </div>
-
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">完成时间</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="date" bind:value={editDueDate} style="flex: 1; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none;" />
-            <select bind:value={editDueTime} style="width: 90px; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: white;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">完成时间</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="date" bind:value={editDueDate} style="flex: 1; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none;" />
+            <select bind:value={editDueTime} style="width: 80px; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white;">
               {#each timeOptions as t}
                 <option value={t}>{t}</option>
               {/each}
@@ -1041,9 +1043,9 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-          <button onclick={() => showEditModal = false} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
-          <button onclick={saveEditTask} disabled={!editTitle.trim()} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {editTitle.trim() ? '1' : '0.5'};">保存</button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick={() => showEditModal = false} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
+          <button onclick={saveEditTask} disabled={!editTitle.trim()} style="flex: 1; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {editTitle.trim() ? '1' : '0.5'};">保存</button>
         </div>
       </div>
     </div>
@@ -1052,50 +1054,50 @@
   <!-- 帮助弹窗 -->
   {#if showHelp}
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showHelp = false}>
-      <div style="background: white; border-radius: 20px; padding: 32px; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-          <h2 style="font-size: 24px; font-weight: 700; color: #1e293b; margin: 0;">📖 帮助文档</h2>
-          <button onclick={() => showHelp = false} style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 20px; color: #64748b;">×</button>
+      <div style="background: white; border-radius: 16px; padding: 20px; max-width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0;">📖 帮助文档</h2>
+          <button onclick={() => showHelp = false} style="width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 18px; color: #64748b;">×</button>
         </div>
 
-        <div style="color: #475569; line-height: 1.8;">
-          <h3 style="color: #667eea; font-size: 18px; margin: 24px 0 12px 0;">📌 内置提醒函数</h3>
-          <p style="margin: 0 0 12px 0;">选择预设的提醒时间，系统会自动计算提醒时间点：</p>
-          <div style="background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 14px;">
+        <div style="color: #475569; line-height: 1.7; font-size: 13px;">
+          <h3 style="color: #667eea; font-size: 14px; margin: 18px 0 10px 0;">📌 内置提醒函数</h3>
+          <p style="margin: 0 0 10px 0;">选择预设的提醒时间，系统会自动计算提醒时间点：</p>
+          <div style="background: #f8fafc; padding: 12px; border-radius: 10px; font-size: 12px;">
             <div><strong>提前提醒：</strong>提前5分钟、10分钟、15分钟、30分钟、1小时、2小时、3小时、6小时、12小时、1天、2天、3天、1周</div>
-            <div style="margin-top: 8px;"><strong>当天提醒：</strong>当天早上7/8/9点、中午12点、傍晚17/18点、晚上20点</div>
-            <div style="margin-top: 8px;"><strong>隔天提醒：</strong>第二天早上8/9点</div>
+            <div style="margin-top: 6px;"><strong>当天提醒：</strong>当天早上7/8/9点、中午12点、傍晚17/18点、晚上20点</div>
+            <div style="margin-top: 6px;"><strong>隔天提醒：</strong>第二天早上8/9点</div>
           </div>
 
-          <h3 style="color: #667eea; font-size: 18px; margin: 24px 0 12px 0;">🔧 自定义公式语法</h3>
-          <p style="margin: 0 0 12px 0;">使用自定义公式可以灵活设置提醒时间：</p>
+          <h3 style="color: #667eea; font-size: 14px; margin: 18px 0 10px 0;">🔧 自定义公式语法</h3>
+          <p style="margin: 0 0 10px 0;">使用自定义公式可以灵活设置提醒时间：</p>
 
-          <div style="background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 14px;">
-            <h4 style="margin: 0 0 12px 0; color: #1e293b;">1. 基于完成时间 (DueTime)</h4>
+          <div style="background: #f8fafc; padding: 12px; border-radius: 10px; font-size: 12px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 13px;">1. 基于完成时间 (DueTime)</h4>
             <table style="width: 100%; border-collapse: collapse;">
               <tbody>
-                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">DueTime-1h</code></td><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">完成时间前1小时</td></tr>
-                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">DueTime-30m</code></td><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">完成时间前30分钟</td></tr>
-                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">DueTime-1d</code></td><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">完成时间前1天</td></tr>
-                <tr><td style="padding: 8px 0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">DueTime+1h</code></td><td style="padding: 8px 0;">完成时间后1小时</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">DueTime-1h</code></td><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">完成时间前1小时</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">DueTime-30m</code></td><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">完成时间前30分钟</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">DueTime-1d</code></td><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">完成时间前1天</td></tr>
+                <tr><td style="padding: 6px 0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">DueTime+1h</code></td><td style="padding: 6px 0;">完成时间后1小时</td></tr>
               </tbody>
             </table>
           </div>
 
-          <div style="background: #f8fafc; padding: 16px; border-radius: 12px; font-size: 14px; margin-top: 16px;">
-            <h4 style="margin: 0 0 12px 0; color: #1e293b;">2. 基于当天 (Date)</h4>
+          <div style="background: #f8fafc; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 12px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 13px;">2. 基于当天 (Date)</h4>
             <table style="width: 100%; border-collapse: collapse;">
               <tbody>
-                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">Date+9h</code></td><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">当天早上9点</td></tr>
-                <tr><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">Date+12h</code></td><td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">当天中午12点</td></tr>
-                <tr><td style="padding: 8px 0;"><code style="background: #e0e7ff; padding: 2px 8px; border-radius: 4px;">Date+18h</code></td><td style="padding: 8px 0;">当天傍晚18点</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">Date+9h</code></td><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">当天早上9点</td></tr>
+                <tr><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">Date+12h</code></td><td style="padding: 6px 0; border-bottom: 1px solid #e2e8f0;">当天中午12点</td></tr>
+                <tr><td style="padding: 6px 0;"><code style="background: #e0e7ff; padding: 2px 6px; border-radius: 4px;">Date+18h</code></td><td style="padding: 6px 0;">当天傍晚18点</td></tr>
               </tbody>
             </table>
           </div>
 
-          <div style="background: #fef3c7; padding: 16px; border-radius: 12px; font-size: 14px; margin-top: 16px;">
-            <h4 style="margin: 0 0 8px 0; color: #92400e;">💡 单位说明</h4>
-            <div><code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">m</code> = 分钟 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">h</code> = 小时 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">d</code> = 天</div>
+          <div style="background: #fef3c7; padding: 12px; border-radius: 10px; font-size: 12px; margin-top: 12px;">
+            <h4 style="margin: 0 0 6px 0; color: #92400e; font-size: 13px;">💡 单位说明</h4>
+            <div><code style="background: #fde68a; padding: 2px 6px; border-radius: 4px;">m</code> = 分钟 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 6px; border-radius: 4px;">h</code> = 小时 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 6px; border-radius: 4px;">d</code> = 天</div>
           </div>
         </div>
       </div>
@@ -1105,33 +1107,33 @@
   <!-- 循环任务列表弹窗 -->
   {#if showRecurringModal}
     <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showRecurringModal = false}>
-      <div style="background: white; border-radius: 20px; padding: 28px; width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0;">🔄 循环任务管理</h2>
-          <button onclick={() => showRecurringModal = false} style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 20px; color: #64748b;">×</button>
+      <div style="background: white; border-radius: 16px; padding: 20px; width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">🔄 循环任务管理</h2>
+          <button onclick={() => showRecurringModal = false} style="width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 18px; color: #64748b;">×</button>
         </div>
 
         {#if recurringTemplates.length === 0}
-          <div style="text-align: center; padding: 40px; color: #94a3b8;">
-            <span style="font-size: 48px;">🔄</span>
-            <p style="margin-top: 12px; font-size: 15px;">暂无循环任务</p>
-            <p style="font-size: 13px;">添加任务时勾选"设为循环任务"即可创建</p>
+          <div style="text-align: center; padding: 30px; color: #94a3b8;">
+            <span style="font-size: 40px;">🔄</span>
+            <p style="margin-top: 10px; font-size: 13px;">暂无循环任务</p>
+            <p style="font-size: 11px;">添加任务时勾选"设为循环任务"即可创建</p>
           </div>
         {:else}
-          <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
             {#each recurringTemplates as template}
-              <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 16px;">
+              <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                   <div style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                      <span style="font-size: 18px;">🔄</span>
-                      <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">{template.title}</h3>
-                      <span style="background: #0ea5e920; color: #0ea5e9; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">{getRecurrenceText(template)}</span>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                      <span style="font-size: 14px;">🔄</span>
+                      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">{template.title}</h3>
+                      <span style="background: #0ea5e920; color: #0ea5e9; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600;">{getRecurrenceText(template)}</span>
                     </div>
                     {#if template.description}
-                      <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">{template.description}</p>
+                      <p style="font-size: 12px; color: #64748b; margin: 0 0 6px 0;">{template.description}</p>
                     {/if}
-                    <div style="display: flex; gap: 16px; font-size: 12px; color: #64748b;">
+                    <div style="display: flex; gap: 12px; font-size: 11px; color: #64748b;">
                       <span>基准时间: {template.base_time}</span>
                       <span>已完成: {template.completed_count}次</span>
                       {#if template.next_due_time}
@@ -1139,9 +1141,9 @@
                       {/if}
                     </div>
                   </div>
-                  <div style="display: flex; gap: 8px;">
-                    <button onclick={() => viewTemplateInstances(template.id)} style="padding: 8px 14px; background: #0ea5e9; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600;">查看记录</button>
-                    <button onclick={() => deleteRecurringTemplate(template.id)} style="padding: 8px 14px; background: #ef4444; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600;">删除</button>
+                  <div style="display: flex; gap: 6px;">
+                    <button onclick={() => viewTemplateInstances(template.id)} style="padding: 6px 10px; background: #0ea5e9; color: white; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 600;">查看记录</button>
+                    <button onclick={() => deleteRecurringTemplate(template.id)} style="padding: 6px 10px; background: #ef4444; color: white; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 600;">删除</button>
                   </div>
                 </div>
               </div>
@@ -1151,16 +1153,16 @@
 
         <!-- 循环任务实例记录 -->
         {#if selectedTemplate && templateInstances.length > 0}
-          <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
-            <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">📋 历史记录 - {selectedTemplate.title}</h3>
-            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+          <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0;">📋 历史记录 - {selectedTemplate.title}</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
               {#each templateInstances as instance}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: {instance.is_completed ? '#f0fdf4' : '#fef3c7'}; border-radius: 8px;">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 14px;">#{instance.instance_number}</span>
-                    <span style="font-size: 13px; color: #64748b;">{formatDate(instance.due_time)}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: {instance.is_completed ? '#f0fdf4' : '#fef3c7'}; border-radius: 6px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 12px;">#{instance.instance_number}</span>
+                    <span style="font-size: 11px; color: #64748b;">{formatDate(instance.due_time)}</span>
                   </div>
-                  <span style="font-size: 12px; font-weight: 600; color: {instance.is_completed ? '#22c55e' : '#f97316'};">
+                  <span style="font-size: 11px; font-weight: 600; color: {instance.is_completed ? '#22c55e' : '#f97316'};">
                     {instance.is_completed ? '✓ 已完成' : '待完成'}
                   </span>
                 </div>
@@ -1171,4 +1173,5 @@
       </div>
     </div>
   {/if}
+  </div>
 </main>
