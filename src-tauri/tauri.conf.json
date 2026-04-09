@@ -40,7 +40,7 @@
       "icons/icon.ico"
     ],
     "windows": {
-      "certificateThumbprint": null,
+      "certificateThumbprint": "95B9B64BE18A83938D06530C39F1892B46ADD01E",
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
       "nsis": {

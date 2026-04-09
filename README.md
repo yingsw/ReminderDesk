@@ -49,8 +49,19 @@
 
 ## 安装使用
 
-### 从发布包安装
-下载最新的安装包，双击安装即可。
+### ⚠️ 安装说明（自签名证书）
+
+由于本应用使用自签名证书，Windows 可能显示安全警告。请按以下步骤安装：
+
+1. 双击安装程序运行
+2. 如果出现 **"Windows 已保护你的电脑"** 提示：
+   - 点击 **"更多信息"**
+   - 点击 **"仍要运行"**
+3. 如果出现 **"无法验证发布者"** 提示：
+   - 点击 **"是"** 继续安装
+4. 按照安装向导完成安装
+
+**本应用是安全的**，由浙江巨鼎包装有限公司开发，安全警告是 Windows 对自签名证书的正常提示。
 
 ### 从源码构建
 
@@ -65,8 +76,9 @@ npm install
 # 开发模式
 npm run tauri dev
 
-# 构建发布版本
+# 构建发布版本（带签名）
 npm run tauri build
+# 或运行 build-sign.bat 脁本进行签名
 ```
 
 构建完成后，安装包位于 `src-tauri/target/release/bundle/nsis/` 目录。
@@ -89,6 +101,8 @@ ReminderDesk/
 │   │   └── tray.rs         # 系统托盘
 │   ├── icons/              # 应用图标
 │   └── tauri.conf.json     # Tauri 配置
+├── certs/                  # 代码签名证书
+├── build-sign.bat          # 构建签名脚本
 ├── package.json            # Node 依赖配置
 ├── vite.config.js          # Vite 构建配置
 └── svelte.config.js        # Svelte 配置
