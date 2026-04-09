@@ -318,8 +318,8 @@
         title: editTitle,
         description: editDescription,
         priority: editPriority,
-        category_id: editCategoryId,
-        due_time: `${editDueDate}T${editDueTime}`
+        categoryId: editCategoryId,
+        dueTime: `${editDueDate}T${editDueTime}`
       });
       showEditModal = false;
       editingTask = null;
