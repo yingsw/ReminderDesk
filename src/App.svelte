@@ -567,7 +567,7 @@
   loadRecurringTemplates();
 </script>
 
-<main style="min-height: 100vh; padding: 20px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
+<main style="padding: 16px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
   <div style="max-width: 1100px; margin: 0 auto;">
 
     <!-- 标题栏 -->
@@ -589,30 +589,30 @@
       </div>
     </header>
 
-    <div style="display: grid; grid-template-columns: 400px 1fr; gap: 20px;">
+    <div style="display: grid; grid-template-columns: 380px 1fr; gap: 16px;">
 
       <!-- 左侧：添加任务 -->
-      <div style="background: white; border-radius: 20px; padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
-        <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
-          <span style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">+</span>
+      <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+          <span style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;">+</span>
           添加新任务
         </h2>
 
         <!-- 标题 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">任务标题 *</label>
-          <input type="text" bind:value={newTitle} placeholder="例如：完成项目报告" style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #f8fafc;" />
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务标题 *</label>
+          <input type="text" bind:value={newTitle} placeholder="例如：完成项目报告" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #f8fafc;" />
         </div>
 
         <!-- 描述 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">任务描述</label>
-          <textarea bind:value={newDescription} placeholder="详细描述任务内容..." rows="2" style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; resize: none; box-sizing: border-box; background: #f8fafc;"></textarea>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务描述</label>
+          <textarea bind:value={newDescription} placeholder="详细描述任务内容..." rows="2" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; resize: none; box-sizing: border-box; background: #f8fafc;"></textarea>
         </div>
 
         <!-- 优先级 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 10px;">优先级</label>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">优先级</label>
           <div style="display: flex; gap: 10px;">
             {#each priorities as p}
               <button onclick={() => newPriority = p.value} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; background: {newPriority === p.value ? p.color : p.bg}; color: {newPriority === p.value ? 'white' : p.color}; box-shadow: {newPriority === p.value ? '0 4px 12px ' + p.color + '40' : 'none'};">{p.label}</button>
@@ -621,9 +621,9 @@
         </div>
 
         <!-- 分类 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">分类</label>
-          <select bind:value={newCategoryId} style="width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; cursor: pointer;">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类</label>
+          <select bind:value={newCategoryId} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc; cursor: pointer;">
             <option value={null}>无分类</option>
             {#each categories as cat}
               <option value={cat.id}>{cat.name}</option>
@@ -632,11 +632,11 @@
         </div>
 
         <!-- 完成时间 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">完成时间</label>
-          <div style="display: flex; gap: 10px;">
-            <input type="date" bind:value={newDueDate} style="flex: 1; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc;" />
-            <select bind:value={newDueTime} style="width: 100px; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; background: #f8fafc; cursor: pointer;">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">完成时间</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="date" bind:value={newDueDate} style="flex: 1; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc;" />
+            <select bind:value={newDueTime} style="width: 90px; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: #f8fafc; cursor: pointer;">
               {#each timeOptions as t}
                 <option value={t}>{t}</option>
               {/each}
@@ -645,8 +645,8 @@
         </div>
 
         <!-- 提醒方式 -->
-        <div style="margin-bottom: 18px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 10px;">提醒方式</label>
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">提醒方式</label>
           <div style="display: flex; gap: 10px; margin-bottom: 12px;">
             <button onclick={() => reminderMode = 'builtin'} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'builtin' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'builtin' ? 'white' : '#64748b'};">内置函数</button>
             <button onclick={() => reminderMode = 'custom'} style="flex: 1; padding: 10px 0; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: {reminderMode === 'custom' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {reminderMode === 'custom' ? 'white' : '#64748b'};">自定义公式</button>
@@ -683,10 +683,10 @@
         {/if}
 
         <!-- 循环任务设置 -->
-        <div style="margin-bottom: 18px; padding: 16px; background: #f0f9ff; border-radius: 12px; border: 2px solid #bae6fd;">
-          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px;">
-            <input type="checkbox" bind:checked={isRecurring} style="width: 18px; height: 18px;" />
-            <span style="font-size: 14px; font-weight: 600; color: #0369a1;">🔄 设为循环任务</span>
+        <div style="margin-bottom: 12px; padding: 12px; background: #f0f9ff; border-radius: 10px; border: 2px solid #bae6fd;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 8px;">
+            <input type="checkbox" bind:checked={isRecurring} style="width: 16px; height: 16px;" />
+            <span style="font-size: 13px; font-weight: 600; color: #0369a1;">🔄 设为循环任务</span>
           </label>
 
           {#if isRecurring}
@@ -769,7 +769,7 @@
       </div>
 
       <!-- 右侧：任务列表 -->
-      <div style="background: white; border-radius: 20px; padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); min-height: 600px;">
+      <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
 
         <!-- 分类管理 -->
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
