@@ -42,6 +42,7 @@ pub struct NewRecurringTemplate {
     pub end_type: String,
     pub end_count: Option<i32>,
     pub end_date: Option<String>,
+    pub generate_first: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -119,7 +120,7 @@ pub fn add_recurring_template(
 
     let id = Uuid::new_v4().to_string();
     let now = Local::now().to_rfc3339();
-    let recurrence_days_json = template.recurrence_days
+    let recurrence_days_json = template.recurrence_days.clone()
         .map(|d| serde_json::to_string(&d).unwrap_or_default());
 
     conn.execute(
@@ -155,6 +156,63 @@ pub fn add_recurring_template(
         None => (None, None),
     };
 
+    // 如果需要立即生成第一个任务
+    let next_due_time = if template.generate_first.unwrap_or(false) {
+        let time: NaiveTime = template.base_time.parse().unwrap_or_else(|_| {
+            NaiveTime::from_hms_opt(9, 0, 0).unwrap()
+        });
+        let days: Vec<i32> = template.recurrence_days.clone()
+            .unwrap_or_default();
+
+        if let Some(first_due) = calculate_next_occurrence_for_template(
+            &template.recurrence_type,
+            template.recurrence_interval,
+            &days,
+            &Local::now(),
+            time
+        ) {
+            // 创建实例
+            let instance_id = Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO recurring_instances
+                 (id, template_id, due_time, instance_number, created_at, is_completed)
+                 VALUES (?1, ?2, ?3, 1, ?4, 0)",
+                rusqlite::params![&instance_id, &id, &first_due.to_rfc3339(), &now],
+            ).ok();
+
+            // 创建提醒任务
+            let reminder_id = Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO reminders
+                 (id, title, description, priority, category_id, due_time,
+                  reminder_function, is_completed, created_at, template_id)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, '完成时间提醒', 0, ?7, ?8)",
+                rusqlite::params![
+                    &reminder_id,
+                    &template.title,
+                    &template.description,
+                    template.priority,
+                    template.category_id,
+                    &first_due.to_rfc3339(),
+                    &now,
+                    &id
+                ],
+            ).ok();
+
+            // 更新实例关联提醒ID
+            conn.execute(
+                "UPDATE recurring_instances SET reminder_id = ?1 WHERE id = ?2",
+                [&reminder_id, &instance_id]
+            ).ok();
+
+            Some(first_due.to_rfc3339())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
     Ok(RecurringTemplate {
         id,
         title: template.title,
@@ -172,7 +230,7 @@ pub fn add_recurring_template(
         end_date: template.end_date,
         created_at: now,
         is_active: true,
-        next_due_time: None,
+        next_due_time,
         completed_count: 0,
     })
 }

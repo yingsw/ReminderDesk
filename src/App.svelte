@@ -31,6 +31,7 @@
   let endType = $state('never');
   let endCount = $state(10);
   let endDate = $state('');
+  let generateFirstTask = $state(true); // 是否立即生成第一个任务
   let recurringTemplates = $state([]);
   let showRecurringModal = $state(false);
   let selectedTemplate = $state(null);
@@ -344,7 +345,7 @@
     loading = true;
 
     try {
-      await invoke('add_recurring_template', {
+      const result = await invoke('add_recurring_template', {
         template: {
           title: newTitle,
           description: newDescription,
@@ -356,7 +357,8 @@
           recurrence_days: recurrenceDays.length > 0 ? recurrenceDays : null,
           end_type: endType,
           end_count: endType === 'count' ? endCount : null,
-          end_date: endType === 'date' ? endDate : null
+          end_date: endType === 'date' ? endDate : null,
+          generate_first: generateFirstTask
         }
       });
 
@@ -367,6 +369,7 @@
       newCategoryId = null;
       isRecurring = false;
       recurrenceDays = [];
+      generateFirstTask = true;
 
       await loadRecurringTemplates();
       await loadReminders();
@@ -802,6 +805,17 @@
               {/if}
             </div>
           {/if}
+
+          <!-- 立即生成选项 -->
+          <div style="margin-top: 12px; padding: 10px; background: #fef3c7; border-radius: 8px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" bind:checked={generateFirstTask} style="width: 16px; height: 16px;" />
+              <span style="font-size: 12px; font-weight: 600; color: #92400e;">立即生成第一个任务</span>
+            </label>
+            <p style="margin: 6px 0 0 0; font-size: 11px; color: #a16207;">
+              {generateFirstTask ? '将在今天/下个周期创建第一个任务' : '等到下个周期再自动创建任务'}
+            </p>
+          </div>
         </div>
 
         <!-- 添加按钮 -->
