@@ -40,6 +40,14 @@
   let showHelp = $state(false);
   let showCategoryModal = $state(false);
   let showImportModal = $state(false);
+  let showEditModal = $state(false);
+  let editingTask = $state(null);
+  let editTitle = $state('');
+  let editDescription = $state('');
+  let editPriority = $state(1);
+  let editCategoryId = $state(null);
+  let editDueDate = $state('');
+  let editDueTime = $state('18:00');
   let editingCategory = $state(null);
   let newCategoryName = $state('');
   let newCategoryColor = $state('#3b82f6');
@@ -284,6 +292,40 @@
       await loadReminders();
     } catch (e) {
       console.error('删除任务失败:', e);
+    }
+  }
+
+  // ==================== 编辑任务 ====================
+  function openEditModal(task) {
+    editingTask = task;
+    editTitle = task.title;
+    editDescription = task.description || '';
+    editPriority = task.priority;
+    editCategoryId = task.category_id;
+    const date = new Date(task.due_time);
+    editDueDate = date.toISOString().split('T')[0];
+    editDueTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    showEditModal = true;
+  }
+
+  async function saveEditTask() {
+    if (!editTitle.trim() || !editingTask) return;
+
+    try {
+      await invoke('update_reminder', {
+        id: editingTask.id,
+        title: editTitle,
+        description: editDescription,
+        priority: editPriority,
+        category_id: editCategoryId,
+        due_time: `${editDueDate}T${editDueTime}`
+      });
+      showEditModal = false;
+      editingTask = null;
+      await loadReminders();
+    } catch (e) {
+      console.error('更新任务失败:', e);
+      alert('更新失败: ' + e);
     }
   }
 
@@ -819,11 +861,12 @@
                   </div>
                 </div>
                 <!-- 操作 -->
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 6px;">
+                  <button onclick={() => openEditModal(reminder)} style="width: 32px; height: 32px; border-radius: 8px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 14px;">✏️</button>
                   {#if !reminder.is_completed}
-                    <button onclick={() => completeTask(reminder.id)} style="width: 36px; height: 36px; border-radius: 10px; background: #22c55e; color: white; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 2px 8px #22c55e40;">✓</button>
+                    <button onclick={() => completeTask(reminder.id)} style="width: 32px; height: 32px; border-radius: 8px; background: #22c55e; color: white; border: none; cursor: pointer; font-size: 14px;">✓</button>
                   {/if}
-                  <button onclick={() => deleteTask(reminder.id)} style="width: 36px; height: 36px; border-radius: 10px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 2px 8px #ef444440;">×</button>
+                  <button onclick={() => deleteTask(reminder.id)} style="width: 32px; height: 32px; border-radius: 8px; background: #ef4444; color: white; border: none; cursor: pointer; font-size: 14px;">×</button>
                 </div>
               </div>
             </div>
@@ -932,6 +975,61 @@
         <div style="display: flex; gap: 10px;">
           <button onclick={() => showImportModal = false} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
           <button onclick={importData} disabled={!importJsonText.trim()} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {importJsonText.trim() ? '1' : '0.5'};">导入</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- 编辑任务弹窗 -->
+  {#if showEditModal}
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showEditModal = false}>
+      <div style="background: white; border-radius: 16px; padding: 24px; width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 20px 0;">✏️ 编辑任务</h2>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务标题 *</label>
+          <input type="text" bind:value={editTitle} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;" />
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">任务描述</label>
+          <textarea bind:value={editDescription} rows="2" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; resize: none; box-sizing: border-box;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">优先级</label>
+          <div style="display: flex; gap: 8px;">
+            {#each priorities as p}
+              <button onclick={() => editPriority = p.value} style="flex: 1; padding: 8px 0; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; background: {editPriority === p.value ? p.color : p.bg}; color: {editPriority === p.value ? 'white' : p.color};">{p.label}</button>
+            {/each}
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">分类</label>
+          <select bind:value={editCategoryId} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: white; cursor: pointer;">
+            <option value={null}>无分类</option>
+            {#each categories as cat}
+              <option value={cat.id}>{cat.name}</option>
+            {/each}
+          </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">完成时间</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="date" bind:value={editDueDate} style="flex: 1; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none;" />
+            <select bind:value={editDueTime} style="width: 90px; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 13px; outline: none; background: white;">
+              {#each timeOptions as t}
+                <option value={t}>{t}</option>
+              {/each}
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button onclick={() => showEditModal = false} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">取消</button>
+          <button onclick={saveEditTask} disabled={!editTitle.trim()} style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; opacity: {editTitle.trim() ? '1' : '0.5'};">保存</button>
         </div>
       </div>
     </div>
