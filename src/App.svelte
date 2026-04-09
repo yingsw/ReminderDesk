@@ -8,8 +8,8 @@
   let currentPage = $state(1);
   let pageSize = $state(15);
   let totalPages = $state(1);
-  let selectedCategory = $state(null); // null 表示全部
-  let selectedStatus = $state('all'); // all, pending, completed
+  let selectedCategory = $state(null);
+  let selectedStatus = $state('all');
 
   // 新任务表单
   let newTitle = $state('');
@@ -23,11 +23,24 @@
   let customExpression = $state('DueTime-1h');
   let loading = $state(false);
 
+  // 循环任务
+  let isRecurring = $state(false);
+  let recurrenceType = $state('daily');
+  let recurrenceInterval = $state(1);
+  let recurrenceDays = $state([]);
+  let endType = $state('never');
+  let endCount = $state(10);
+  let endDate = $state('');
+  let recurringTemplates = $state([]);
+  let showRecurringModal = $state(false);
+  let selectedTemplate = $state(null);
+  let templateInstances = $state([]);
+
   // 弹窗状态
   let showHelp = $state(false);
   let showCategoryModal = $state(false);
   let showImportModal = $state(false);
-  let editingCategory = $state(null); // 编辑的分类
+  let editingCategory = $state(null);
   let newCategoryName = $state('');
   let newCategoryColor = $state('#3b82f6');
   let importJsonText = $state('');
@@ -62,6 +75,28 @@
     '当天早上7点', '当天早上8点', '当天早上9点', '当天中午12点', '当天傍晚17点', '当天傍晚18点', '当天晚上20点',
     '第二天早上8点', '第二天早上9点'
   ];
+
+  // 循环类型
+  const recurrenceTypes = [
+    { value: 'daily', label: '每天' },
+    { value: 'weekly', label: '每周' },
+    { value: 'monthly', label: '每月' },
+    { value: 'custom', label: '自定义间隔' }
+  ];
+
+  // 星期选项
+  const weekdayOptions = [
+    { value: 0, label: '周一' },
+    { value: 1, label: '周二' },
+    { value: 2, label: '周三' },
+    { value: 3, label: '周四' },
+    { value: 4, label: '周五' },
+    { value: 5, label: '周六' },
+    { value: 6, label: '周日' }
+  ];
+
+  // 月份日期选项（1-31）
+  const monthDayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
 
   // ==================== 加载函数 ====================
   async function loadCategories() {
@@ -252,6 +287,111 @@
     }
   }
 
+  // ==================== 循环任务操作 ====================
+  async function loadRecurringTemplates() {
+    try {
+      recurringTemplates = await invoke('get_recurring_templates') || [];
+    } catch (e) {
+      console.error('加载循环任务失败:', e);
+      recurringTemplates = [];
+    }
+  }
+
+  async function addRecurringTask() {
+    if (!newTitle.trim()) return;
+    loading = true;
+
+    try {
+      await invoke('add_recurring_template', {
+        template: {
+          title: newTitle,
+          description: newDescription,
+          priority: newPriority,
+          category_id: newCategoryId,
+          base_time: newDueTime,
+          recurrence_type: recurrenceType,
+          recurrence_interval: recurrenceInterval,
+          recurrence_days: recurrenceDays.length > 0 ? recurrenceDays : null,
+          end_type: endType,
+          end_count: endType === 'count' ? endCount : null,
+          end_date: endType === 'date' ? endDate : null
+        }
+      });
+
+      // 清空表单
+      newTitle = '';
+      newDescription = '';
+      newPriority = 1;
+      newCategoryId = null;
+      isRecurring = false;
+      recurrenceDays = [];
+
+      await loadRecurringTemplates();
+      await loadReminders();
+    } catch (e) {
+      console.error('添加循环任务失败:', e);
+      alert('添加失败: ' + e);
+    }
+
+    loading = false;
+  }
+
+  async function deleteRecurringTemplate(id) {
+    if (!confirm('确定删除此循环任务？已生成的任务不会删除。')) return;
+
+    try {
+      await invoke('delete_recurring_template', { id });
+      await loadRecurringTemplates();
+    } catch (e) {
+      console.error('删除循环任务失败:', e);
+    }
+  }
+
+  async function viewTemplateInstances(templateId) {
+    try {
+      templateInstances = await invoke('get_recurring_instances', {
+        template_id: templateId,
+        limit: 50
+      });
+      selectedTemplate = recurringTemplates.find(t => t.id === templateId);
+    } catch (e) {
+      console.error('加载循环记录失败:', e);
+      templateInstances = [];
+    }
+  }
+
+  function toggleRecurrenceDay(day) {
+    if (recurrenceDays.includes(day)) {
+      recurrenceDays = recurrenceDays.filter(d => d !== day);
+    } else {
+      recurrenceDays = [...recurrenceDays, day];
+    }
+  }
+
+  function getRecurrenceText(template) {
+    switch (template.recurrence_type) {
+      case 'daily':
+        return template.recurrence_interval === 1 ? '每天' : `每${template.recurrence_interval}天`;
+      case 'weekly':
+        if (template.recurrence_days) {
+          const days = JSON.parse(template.recurrence_days);
+          const dayNames = days.map(d => weekdayOptions.find(w => w.value === d)?.label || '').join('、');
+          return `每周 ${dayNames}`;
+        }
+        return '每周';
+      case 'monthly':
+        if (template.recurrence_days) {
+          const days = JSON.parse(template.recurrence_days);
+          return `每月 ${days.join('、')}号`;
+        }
+        return '每月';
+      case 'custom':
+        return `每隔${template.recurrence_interval}天`;
+      default:
+        return '循环任务';
+    }
+  }
+
   // ==================== 分页 ====================
   function goToPage(page) {
     if (page >= 1 && page <= totalPages) {
@@ -424,6 +564,7 @@
   // 初始化
   loadCategories();
   loadReminders();
+  loadRecurringTemplates();
 </script>
 
 <main style="min-height: 100vh; padding: 20px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
@@ -441,6 +582,7 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
+        <button onclick={() => showRecurringModal = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">🔄 循环任务</button>
         <button onclick={exportData} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📤 导出</button>
         <button onclick={() => showImportModal = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📥 导入</button>
         <button onclick={() => showHelp = true} style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;">📖 帮助</button>
@@ -528,6 +670,7 @@
         </div>
 
         <!-- 提醒预览 -->
+        {#if !isRecurring}
         <div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 14px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(102,126,234,0.3);">
           <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 6px;">
             提醒时间预览
@@ -537,10 +680,91 @@
           </div>
           <div style="color: white; font-size: 22px; font-weight: 700;">{reminderTimeDisplay()}</div>
         </div>
+        {/if}
+
+        <!-- 循环任务设置 -->
+        <div style="margin-bottom: 18px; padding: 16px; background: #f0f9ff; border-radius: 12px; border: 2px solid #bae6fd;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px;">
+            <input type="checkbox" bind:checked={isRecurring} style="width: 18px; height: 18px;" />
+            <span style="font-size: 14px; font-weight: 600; color: #0369a1;">🔄 设为循环任务</span>
+          </label>
+
+          {#if isRecurring}
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #bae6fd;">
+              <!-- 循环类型 -->
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">循环周期</label>
+                <select bind:value={recurrenceType} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;">
+                  {#each recurrenceTypes as rt}
+                    <option value={rt.value}>{rt.label}</option>
+                  {/each}
+                </select>
+              </div>
+
+              <!-- 间隔 -->
+              {#if recurrenceType === 'daily' || recurrenceType === 'custom'}
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">
+                    间隔（每几天）
+                  </label>
+                  <input type="number" bind:value={recurrenceInterval} min="1" max="365" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                </div>
+              {/if}
+
+              <!-- 每周几 -->
+              {#if recurrenceType === 'weekly'}
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">选择星期</label>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    {#each weekdayOptions as wd}
+                      <button onclick={() => toggleRecurrenceDay(wd.value)} style="padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(wd.value) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(wd.value) ? 'white' : '#64748b'};">{wd.label}</button>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+
+              <!-- 每月几号 -->
+              {#if recurrenceType === 'monthly'}
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">选择日期（可多选）</label>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;">
+                    {#each monthDayOptions as day}
+                      <button onclick={() => toggleRecurrenceDay(day)} style="width: 32px; height: 32px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {recurrenceDays.includes(day) ? '#0ea5e9' : '#e2e8f0'}; color: {recurrenceDays.includes(day) ? 'white' : '#64748b'};">{day}</button>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+
+              <!-- 结束条件 -->
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">结束条件</label>
+                <div style="display: flex; gap: 8px;">
+                  <button onclick={() => endType = 'never'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'never' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'never' ? 'white' : '#64748b'};">永不</button>
+                  <button onclick={() => endType = 'count'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'count' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'count' ? 'white' : '#64748b'};">次数</button>
+                  <button onclick={() => endType = 'date'} style="flex: 1; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {endType === 'date' ? '#0ea5e9' : '#e2e8f0'}; color: {endType === 'date' ? 'white' : '#64748b'};">日期</button>
+                </div>
+              </div>
+
+              {#if endType === 'count'}
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">重复次数</label>
+                  <input type="number" bind:value={endCount} min="1" max="999" style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                </div>
+              {/if}
+
+              {#if endType === 'date'}
+                <div style="margin-bottom: 12px;">
+                  <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">结束日期</label>
+                  <input type="date" bind:value={endDate} style="width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: white;" />
+                </div>
+              {/if}
+            </div>
+          {/if}
+        </div>
 
         <!-- 添加按钮 -->
-        <button onclick={addTask} disabled={loading || !newTitle.trim()} style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 16px; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; opacity: {loading || !newTitle.trim() ? '0.6' : '1'}; transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);">
-          {loading ? '添加中...' : '+ 添加任务'}
+        <button onclick={isRecurring ? addRecurringTask : addTask} disabled={loading || !newTitle.trim()} style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-size: 16px; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; opacity: {loading || !newTitle.trim() ? '0.6' : '1'}; transition: all 0.2s; box-shadow: 0 4px 16px rgba(102,126,234,0.4);">
+          {loading ? '添加中...' : isRecurring ? '+ 添加循环任务' : '+ 添加任务'}
         </button>
       </div>
 
@@ -581,7 +805,7 @@
                 <div style="width: 14px; height: 14px; border-radius: 50%; background: {getPriority(reminder.priority).color}; margin-top: 4px; box-shadow: 0 2px 8px {getPriority(reminder.priority).color}40;"></div>
                 <!-- 内容 -->
                 <div style="flex: 1; min-width: 0;">
-                  <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.title}</h3>
+                  <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.template_id ? '🔄 ' : ''}{reminder.title}</h3>
                   {#if reminder.description}
                     <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">{reminder.description}</p>
                   {/if}
@@ -762,6 +986,76 @@
             <div><code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">m</code> = 分钟 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">h</code> = 小时 &nbsp;&nbsp; <code style="background: #fde68a; padding: 2px 8px; border-radius: 4px;">d</code> = 天</div>
           </div>
         </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- 循环任务列表弹窗 -->
+  {#if showRecurringModal}
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" onclick={() => showRecurringModal = false}>
+      <div style="background: white; border-radius: 20px; padding: 28px; width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);" onclick={(e) => e.stopPropagation()}>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0;">🔄 循环任务管理</h2>
+          <button onclick={() => showRecurringModal = false} style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; font-size: 20px; color: #64748b;">×</button>
+        </div>
+
+        {#if recurringTemplates.length === 0}
+          <div style="text-align: center; padding: 40px; color: #94a3b8;">
+            <span style="font-size: 48px;">🔄</span>
+            <p style="margin-top: 12px; font-size: 15px;">暂无循环任务</p>
+            <p style="font-size: 13px;">添加任务时勾选"设为循环任务"即可创建</p>
+          </div>
+        {:else}
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            {#each recurringTemplates as template}
+              <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                      <span style="font-size: 18px;">🔄</span>
+                      <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">{template.title}</h3>
+                      <span style="background: #0ea5e920; color: #0ea5e9; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">{getRecurrenceText(template)}</span>
+                    </div>
+                    {#if template.description}
+                      <p style="font-size: 13px; color: #64748b; margin: 0 0 8px 0;">{template.description}</p>
+                    {/if}
+                    <div style="display: flex; gap: 16px; font-size: 12px; color: #64748b;">
+                      <span>基准时间: {template.base_time}</span>
+                      <span>已完成: {template.completed_count}次</span>
+                      {#if template.next_due_time}
+                        <span>下次: {formatDate(template.next_due_time)}</span>
+                      {/if}
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <button onclick={() => viewTemplateInstances(template.id)} style="padding: 8px 14px; background: #0ea5e9; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600;">查看记录</button>
+                    <button onclick={() => deleteRecurringTemplate(template.id)} style="padding: 8px 14px; background: #ef4444; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600;">删除</button>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- 循环任务实例记录 -->
+        {#if selectedTemplate && templateInstances.length > 0}
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+            <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">📋 历史记录 - {selectedTemplate.title}</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+              {#each templateInstances as instance}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: {instance.is_completed ? '#f0fdf4' : '#fef3c7'}; border-radius: 8px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 14px;">#{instance.instance_number}</span>
+                    <span style="font-size: 13px; color: #64748b;">{formatDate(instance.due_time)}</span>
+                  </div>
+                  <span style="font-size: 12px; font-weight: 600; color: {instance.is_completed ? '#22c55e' : '#f97316'};">
+                    {instance.is_completed ? '✓ 已完成' : '待完成'}
+                  </span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
   {/if}

@@ -1,5 +1,6 @@
 use crate::database::DbState;
 use crate::reminder::{calculate_reminder_time, Reminder};
+use crate::recurring;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 use tauri::{AppHandle, Manager};
@@ -14,12 +15,22 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 
     SCHEDULER_RUNNING.store(true, Ordering::SeqCst);
 
+    // 启动时立即生成一次循环任务
+    if let Some(db) = app.try_state::<DbState>() {
+        let _ = recurring::generate_upcoming_instances(&db);
+    }
+
     let app_handle = app.clone();
 
     tauri::async_runtime::spawn(async move {
         loop {
-            tokio::time::sleep(Duration::from_secs(30)).await;
+            tokio::time::sleep(Duration::from_secs(60)).await;
             check_and_notify(&app_handle);
+
+            // 每分钟检查是否需要生成新的循环任务实例
+            if let Some(db) = app_handle.try_state::<DbState>() {
+                let _ = recurring::generate_upcoming_instances(&db);
+            }
         }
     });
 
@@ -38,7 +49,7 @@ fn check_and_notify(app: &AppHandle) {
     };
 
     let Ok(mut stmt) = conn.prepare(
-        "SELECT id, title, description, priority, category_id, due_time, reminder_function, is_completed, created_at FROM reminders WHERE is_completed = 0"
+        "SELECT id, title, description, priority, category_id, due_time, reminder_function, is_completed, created_at, template_id FROM reminders WHERE is_completed = 0"
     ) else {
         return;
     };
@@ -56,6 +67,7 @@ fn check_and_notify(app: &AppHandle) {
             reminder_function: row.get(6)?,
             is_completed: row.get::<_, i32>(7)? != 0,
             created_at: row.get(8)?,
+            template_id: row.get(9)?,
         })
     }) else {
         return;
@@ -67,7 +79,6 @@ fn check_and_notify(app: &AppHandle) {
         if let Ok(reminder) = reminder_result {
             if let Some(reminder_time) = calculate_reminder_time(&reminder.due_time, &reminder.reminder_function) {
                 let diff: chrono::Duration = reminder_time - now;
-                // 在提醒时间前后30秒内触发
                 if diff.num_seconds().abs() <= 30 {
                     send_notification(app, &reminder);
                 }

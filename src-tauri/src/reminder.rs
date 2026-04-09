@@ -103,6 +103,7 @@ pub struct Reminder {
     pub reminder_function: String,
     pub is_completed: bool,
     pub created_at: String,
+    pub template_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -173,7 +174,7 @@ pub fn get_reminders(db: State<DbState>, params: GetRemindersParams) -> Result<P
 
     // 查询数据
     let query = format!(
-        "SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at
+        "SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at, r.template_id
          FROM reminders r
          LEFT JOIN categories c ON r.category_id = c.id
          {} ORDER BY r.due_time ASC LIMIT {} OFFSET {}",
@@ -196,6 +197,7 @@ pub fn get_reminders(db: State<DbState>, params: GetRemindersParams) -> Result<P
                 reminder_function: row.get(8)?,
                 is_completed: row.get::<_, i32>(9)? != 0,
                 created_at: row.get(10)?,
+                template_id: row.get(11)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -257,6 +259,7 @@ pub fn add_reminder(db: State<DbState>, reminder: NewReminder) -> Result<Reminde
         reminder_function: reminder.reminder_function,
         is_completed: false,
         created_at: now,
+        template_id: None,
     })
 }
 
@@ -444,7 +447,7 @@ pub fn export_data(db: State<DbState>) -> Result<String, String> {
 
     // 导出任务
     let mut rem_stmt = conn
-        .prepare("SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at FROM reminders r LEFT JOIN categories c ON r.category_id = c.id ORDER BY r.created_at ASC")
+        .prepare("SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at, r.template_id FROM reminders r LEFT JOIN categories c ON r.category_id = c.id ORDER BY r.created_at ASC")
         .map_err(|e| e.to_string())?;
 
     let reminders = rem_stmt
@@ -461,6 +464,7 @@ pub fn export_data(db: State<DbState>) -> Result<String, String> {
                 reminder_function: row.get(8)?,
                 is_completed: row.get::<_, i32>(9)? != 0,
                 created_at: row.get(10)?,
+                template_id: row.get(11)?,
             })
         })
         .map_err(|e| e.to_string())?
