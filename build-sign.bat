@@ -16,11 +16,11 @@ set SIGNTOOL="C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signto
 echo 已签名 exe
 
 echo [3] 签名安装程序...
-%SIGNTOOL% sign /sha1 %CERT_THUMBPRINT% /fd sha256 "src-tauri\target\release\bundle\nsis\任务提醒助手_0.1.0_x64-setup.exe"
+%SIGNTOOL% sign /sha1 %CERT_THUMBPRINT% /fd sha256 "src-tauri\target\release\bundle\nsis\任务提醒助手_0.1.1_x64-setup.exe"
 echo 已签名安装包
 
 echo [4] 复制到桌面...
-copy "src-tauri\target\release\bundle\nsis\任务提醒助手_0.1.0_x64-setup.exe" "%USERPROFILE%\Desktop\"
+copy "src-tauri\target\release\bundle\nsis\任务提醒助手_0.1.1_x64-setup.exe" "%USERPROFILE%\Desktop\"
 
 echo ========================================
 echo 构建完成！

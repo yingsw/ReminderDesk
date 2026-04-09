@@ -78,14 +78,14 @@
       const result = await invoke('get_reminders', {
         params: {
           page: currentPage,
-          pageSize: pageSize,
-          categoryId: selectedCategory,
+          page_size: pageSize,
+          category_id: selectedCategory,
           status: selectedStatus
         }
       });
       reminders = result.items || [];
       totalReminders = result.total;
-      totalPages = result.totalPages;
+      totalPages = result.total_pages;
     } catch (e) {
       console.error('加载任务失败:', e);
       reminders = [];
@@ -171,7 +171,7 @@
 
     try {
       const result = await invoke('import_data', {
-        jsonData: importJsonText,
+        json_data: importJsonText,
         merge: importMerge
       });
       importResult = result;
@@ -212,9 +212,9 @@
           title: newTitle,
           description: newDescription,
           priority: newPriority,
-          categoryId: newCategoryId,
-          dueTime: `${newDueDate}T${newDueTime}`,
-          reminderFunction: reminderFunction
+          category_id: newCategoryId,
+          due_time: `${newDueDate}T${newDueTime}`,
+          reminder_function: reminderFunction
         }
       });
 
