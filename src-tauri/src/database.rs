@@ -33,6 +33,7 @@ pub fn init_database(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> 
             due_time TEXT NOT NULL,
             reminder_function TEXT,
             is_completed INTEGER DEFAULT 0,
+            is_pinned INTEGER DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             template_id TEXT,
             FOREIGN KEY (category_id) REFERENCES categories(id)
@@ -99,6 +100,7 @@ pub fn init_database(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> 
     // 兼容性检查：添加缺失的列
     add_column_if_missing(&conn, "reminders", "template_id", "TEXT")?;
     add_column_if_missing(&conn, "reminders", "category_id", "INTEGER")?;
+    add_column_if_missing(&conn, "reminders", "is_pinned", "INTEGER DEFAULT 0")?;
 
     app.manage(DbState(Mutex::new(conn)));
 

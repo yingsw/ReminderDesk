@@ -102,6 +102,7 @@ pub struct Reminder {
     pub due_time: String,
     pub reminder_function: String,
     pub is_completed: bool,
+    pub is_pinned: bool,
     pub created_at: String,
     pub template_id: Option<String>,
 }
@@ -131,6 +132,7 @@ pub struct GetRemindersParams {
     pub page_size: i32,
     pub category_id: Option<i32>,
     pub status: Option<String>, // "all", "pending", "completed"
+    pub sort_by: Option<String>, // "due_time", "created_at", "priority"
 }
 
 #[command]
@@ -172,13 +174,20 @@ pub fn get_reminders(db: State<DbState>, params: GetRemindersParams) -> Result<P
     let offset = (page - 1) * page_size;
     let total_pages = (total as f64 / page_size as f64).ceil() as i32;
 
-    // 查询数据
+    // 确定排序字段（置顶优先、未完成优先、然后按选择的字段排序）
+    let sort_field = match params.sort_by.as_deref() {
+        Some("created_at") => "r.created_at",
+        Some("priority") => "r.priority DESC",
+        _ => "r.due_time ASC", // 默认按到期时间
+    };
+
+    // 查询数据（置顶优先，未完成优先于已完成）
     let query = format!(
-        "SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at, r.template_id
+        "SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.is_pinned, r.created_at, r.template_id
          FROM reminders r
          LEFT JOIN categories c ON r.category_id = c.id
-         {} ORDER BY r.due_time ASC LIMIT {} OFFSET {}",
-        where_clause, page_size, offset
+         {} ORDER BY r.is_pinned DESC, r.is_completed ASC, {} LIMIT {} OFFSET {}",
+        where_clause, sort_field, page_size, offset
     );
 
     let mut stmt = conn.prepare(&query).map_err(|e| e.to_string())?;
@@ -196,8 +205,9 @@ pub fn get_reminders(db: State<DbState>, params: GetRemindersParams) -> Result<P
                 due_time: row.get(7)?,
                 reminder_function: row.get(8)?,
                 is_completed: row.get::<_, i32>(9)? != 0,
-                created_at: row.get(10)?,
-                template_id: row.get(11)?,
+                is_pinned: row.get::<_, i32>(10)? != 0,
+                created_at: row.get(11)?,
+                template_id: row.get(12)?,
             })
         })
         .map_err(|e| e.to_string())?
@@ -221,7 +231,7 @@ pub fn add_reminder(db: State<DbState>, reminder: NewReminder) -> Result<Reminde
     let conn = db.0.lock().map_err(|e| e.to_string())?;
 
     conn.execute(
-        "INSERT INTO reminders (id, title, description, priority, category_id, due_time, reminder_function, is_completed, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 0, ?8)",
+        "INSERT INTO reminders (id, title, description, priority, category_id, due_time, reminder_function, is_completed, is_pinned, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 0, 0, ?8)",
         rusqlite::params![
             &id,
             &reminder.title,
@@ -258,6 +268,7 @@ pub fn add_reminder(db: State<DbState>, reminder: NewReminder) -> Result<Reminde
         due_time: reminder.due_time,
         reminder_function: reminder.reminder_function,
         is_completed: false,
+        is_pinned: false,
         created_at: now,
         template_id: None,
     })
@@ -268,8 +279,21 @@ pub fn complete_reminder(db: State<DbState>, id: String) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
 
     conn.execute(
-        "UPDATE reminders SET is_completed = 1 WHERE id = ?1",
+        "UPDATE reminders SET is_completed = 1, is_pinned = 0 WHERE id = ?1",
         [&id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+pub fn pin_reminder(db: State<DbState>, id: String, pinned: bool) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+
+    conn.execute(
+        "UPDATE reminders SET is_pinned = ?1 WHERE id = ?2",
+        rusqlite::params![pinned as i32, &id],
     )
     .map_err(|e| e.to_string())?;
 
@@ -287,12 +311,12 @@ pub fn delete_reminder(db: State<DbState>, id: String) -> Result<(), String> {
 }
 
 #[command]
-pub fn update_reminder(db: State<DbState>, id: String, title: String, description: String, priority: i32, category_id: Option<i32>, due_time: String) -> Result<(), String> {
+pub fn update_reminder(db: State<DbState>, id: String, title: String, description: String, priority: i32, category_id: Option<i32>, due_time: String, reminder_function: String) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
 
     conn.execute(
-        "UPDATE reminders SET title = ?1, description = ?2, priority = ?3, category_id = ?4, due_time = ?5 WHERE id = ?6",
-        rusqlite::params![&title, &description, priority, category_id, &due_time, &id],
+        "UPDATE reminders SET title = ?1, description = ?2, priority = ?3, category_id = ?4, due_time = ?5, reminder_function = ?6 WHERE id = ?7",
+        rusqlite::params![&title, &description, priority, category_id, &due_time, &reminder_function, &id],
     )
     .map_err(|e| e.to_string())?;
 
@@ -447,7 +471,7 @@ pub fn export_data(db: State<DbState>) -> Result<String, String> {
 
     // 导出任务
     let mut rem_stmt = conn
-        .prepare("SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.created_at, r.template_id FROM reminders r LEFT JOIN categories c ON r.category_id = c.id ORDER BY r.created_at ASC")
+        .prepare("SELECT r.id, r.title, r.description, r.priority, r.category_id, c.name, c.color, r.due_time, r.reminder_function, r.is_completed, r.is_pinned, r.created_at, r.template_id FROM reminders r LEFT JOIN categories c ON r.category_id = c.id ORDER BY r.created_at ASC")
         .map_err(|e| e.to_string())?;
 
     let reminders = rem_stmt
@@ -463,8 +487,9 @@ pub fn export_data(db: State<DbState>) -> Result<String, String> {
                 due_time: row.get(7)?,
                 reminder_function: row.get(8)?,
                 is_completed: row.get::<_, i32>(9)? != 0,
-                created_at: row.get(10)?,
-                template_id: row.get(11)?,
+                is_pinned: row.get::<_, i32>(10)? != 0,
+                created_at: row.get(11)?,
+                template_id: row.get(12)?,
             })
         })
         .map_err(|e| e.to_string())?

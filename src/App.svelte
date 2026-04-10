@@ -10,6 +10,7 @@
   let totalPages = $state(1);
   let selectedCategory = $state(null);
   let selectedStatus = $state('all');
+  let sortBy = $state('due_time'); // 排序方式：due_time, created_at, priority
 
   // 新任务表单
   let newTitle = $state('');
@@ -49,6 +50,7 @@
   let editCategoryId = $state(null);
   let editDueDate = $state('');
   let editDueTime = $state('18:00');
+  let editReminderFunction = $state('完成时间提醒');
   let editingCategory = $state(null);
   let newCategoryName = $state('');
   let newCategoryColor = $state('#3b82f6');
@@ -58,6 +60,13 @@
 
   // 分页选项
   const pageSizeOptions = [10, 15, 20, 30, 50];
+
+  // 排序选项
+  const sortOptions = [
+    { value: 'due_time', label: '按到期时间' },
+    { value: 'created_at', label: '按添加时间' },
+    { value: 'priority', label: '按优先级' }
+  ];
 
   // 优先级配置
   const priorities = [
@@ -124,7 +133,8 @@
           page: currentPage,
           page_size: pageSize,
           category_id: selectedCategory,
-          status: selectedStatus
+          status: selectedStatus,
+          sort_by: sortBy
         }
       });
       reminders = result.items || [];
@@ -296,6 +306,15 @@
     }
   }
 
+  async function pinTask(id, pinned) {
+    try {
+      await invoke('pin_reminder', { id, pinned });
+      await loadReminders();
+    } catch (e) {
+      console.error('置顶操作失败:', e);
+    }
+  }
+
   // ==================== 编辑任务 ====================
   function openEditModal(task) {
     editingTask = task;
@@ -306,6 +325,7 @@
     const date = new Date(task.due_time);
     editDueDate = date.toISOString().split('T')[0];
     editDueTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    editReminderFunction = task.reminder_function || '完成时间提醒';
     showEditModal = true;
   }
 
@@ -319,7 +339,8 @@
         description: editDescription,
         priority: editPriority,
         categoryId: editCategoryId,
-        dueTime: `${editDueDate}T${editDueTime}`
+        dueTime: `${editDueDate}T${editDueTime}`,
+        reminderFunction: editReminderFunction
       });
       showEditModal = false;
       editingTask = null;
@@ -461,6 +482,13 @@
   // 分类筛选
   function filterByCategory(catId) {
     selectedCategory = catId;
+    currentPage = 1;
+    loadReminders();
+  }
+
+  // 排序变更
+  function changeSortBy(sort) {
+    sortBy = sort;
     currentPage = 1;
     loadReminders();
   }
@@ -843,11 +871,19 @@
           </div>
         </div>
 
-        <!-- 状态筛选 -->
-        <div style="display: flex; gap: 8px; margin-bottom: 14px;">
-          <button onclick={() => filterByStatus('all')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'all' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedStatus === 'all' ? 'white' : '#64748b'};">全部 ({totalReminders})</button>
-          <button onclick={() => filterByStatus('pending')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'pending' ? '#f97316' : '#f1f5f9'}; color: {selectedStatus === 'pending' ? 'white' : '#64748b'};">待办</button>
-          <button onclick={() => filterByStatus('completed')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'completed' ? '#22c55e' : '#f1f5f9'}; color: {selectedStatus === 'completed' ? 'white' : '#64748b'};">已完成</button>
+        <!-- 状态筛选和排序 -->
+        <div style="display: flex; gap: 8px; margin-bottom: 14px; align-items: center;">
+          <div style="display: flex; gap: 8px; flex: 1;">
+            <button onclick={() => filterByStatus('all')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'all' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {selectedStatus === 'all' ? 'white' : '#64748b'};">全部 ({totalReminders})</button>
+            <button onclick={() => filterByStatus('pending')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'pending' ? '#f97316' : '#f1f5f9'}; color: {selectedStatus === 'pending' ? 'white' : '#64748b'};">待办</button>
+            <button onclick={() => filterByStatus('completed')} style="flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: {selectedStatus === 'completed' ? '#22c55e' : '#f1f5f9'}; color: {selectedStatus === 'completed' ? 'white' : '#64748b'};">已完成</button>
+          </div>
+          <!-- 排序选择 -->
+          <select bind:value={sortBy} onchange={() => { currentPage = 1; loadReminders(); }} style="padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 12px; outline: none; background: #f8fafc; cursor: pointer;">
+            {#each sortOptions as opt}
+              <option value={opt.value}>{opt.label}</option>
+            {/each}
+          </select>
         </div>
 
         <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0;">任务列表</h2>
@@ -855,13 +891,13 @@
         <!-- 任务列表 -->
         <div style="display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; padding-right: 6px;">
           {#each reminders as reminder (reminder.id)}
-            <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; transition: all 0.2s; {reminder.is_completed ? 'opacity: 0.6;' : ''}">
+            <div style="background: #f8fafc; border: 2px solid {reminder.is_pinned ? '#f97316' : '#e2e8f0'}; border-radius: 10px; padding: 12px; transition: all 0.2s; {reminder.is_completed ? 'opacity: 0.6;' : ''} {reminder.is_pinned ? 'box-shadow: 0 4px 12px rgba(249,115,22,0.2);' : ''}">
               <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <!-- 优先级 -->
-                <div style="width: 12px; height: 12px; border-radius: 50%; background: {getPriority(reminder.priority).color}; margin-top: 3px; box-shadow: 0 2px 8px {getPriority(reminder.priority).color}40;"></div>
+                <!-- 优先级/置顶标记 -->
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: {reminder.is_pinned ? '#f97316' : getPriority(reminder.priority).color}; margin-top: 3px; box-shadow: 0 2px 8px {reminder.is_pinned ? '#f97316' : getPriority(reminder.priority).color}40;"></div>
                 <!-- 内容 -->
                 <div style="flex: 1; min-width: 0;">
-                  <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 3px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.template_id ? '🔄 ' : ''}{reminder.title}</h3>
+                  <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 3px 0; {reminder.is_completed ? 'text-decoration: line-through;' : ''}">{reminder.is_pinned ? '📌 ' : ''}{reminder.template_id ? '🔄 ' : ''}{reminder.title}</h3>
                   {#if reminder.description}
                     <p style="font-size: 12px; color: #64748b; margin: 0 0 6px 0;">{reminder.description}</p>
                   {/if}
@@ -876,6 +912,9 @@
                 </div>
                 <!-- 操作 -->
                 <div style="display: flex; gap: 4px;">
+                  {#if !reminder.is_completed}
+                    <button onclick={() => pinTask(reminder.id, !reminder.is_pinned)} style="width: 28px; height: 28px; border-radius: 6px; background: {reminder.is_pinned ? '#f97316' : '#f1f5f9'}; color: {reminder.is_pinned ? 'white' : '#64748b'}; border: none; cursor: pointer; font-size: 12px;" title="置顶">📌</button>
+                  {/if}
                   <button onclick={() => openEditModal(reminder)} style="width: 28px; height: 28px; border-radius: 6px; background: #3b82f6; color: white; border: none; cursor: pointer; font-size: 12px;">✏️</button>
                   {#if !reminder.is_completed}
                     <button onclick={() => completeTask(reminder.id)} style="width: 28px; height: 28px; border-radius: 6px; background: #22c55e; color: white; border: none; cursor: pointer; font-size: 12px;">✓</button>
@@ -892,17 +931,17 @@
           {/each}
         </div>
 
-        <!-- 分页 -->
-        {#if totalPages > 1}
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 2px solid #e2e8f0;">
-            <!-- 左：每页条数 -->
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 12px; color: #64748b;">每页：</span>
-              {#each pageSizeOptions as size}
-                <button onclick={() => changePageSize(size)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {pageSize === size ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {pageSize === size ? 'white' : '#64748b'};">{size}</button>
-              {/each}
-            </div>
-            <!-- 右：页码 -->
+        <!-- 分页（始终显示，便于设置每页条数） -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 2px solid #e2e8f0;">
+          <!-- 左：每页条数 -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 12px; color: #64748b;">每页：</span>
+            {#each pageSizeOptions as size}
+              <button onclick={() => changePageSize(size)} style="padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {pageSize === size ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {pageSize === size ? 'white' : '#64748b'};">{size}</button>
+            {/each}
+          </div>
+          <!-- 右：页码（仅多页时显示） -->
+          {#if totalPages > 1}
             <div style="display: flex; align-items: center; gap: 6px;">
               <button onclick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} style="padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === 1 ? '0.5' : '1'};">上一页</button>
               {#if currentPage > 2}
@@ -922,8 +961,10 @@
               {/if}
               <button onclick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} style="padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b; opacity: {currentPage === totalPages ? '0.5' : '1'};">下一页</button>
             </div>
-          </div>
-        {/if}
+          {:else}
+            <span style="font-size: 12px; color: #64748b;">共 {totalReminders} 条</span>
+          {/if}
+        </div>
       </div>
     </div>
 
@@ -1041,6 +1082,15 @@
               {/each}
             </select>
           </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">提醒功能</label>
+          <select bind:value={editReminderFunction} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white; cursor: pointer;">
+            {#each reminderFunctions as f}
+              <option value={f}>{f}</option>
+            {/each}
+          </select>
         </div>
 
         <div style="display: flex; gap: 8px;">

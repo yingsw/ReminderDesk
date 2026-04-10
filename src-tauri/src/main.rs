@@ -65,6 +65,7 @@ fn main() {
             reminder::update_reminder,
             reminder::delete_reminder,
             reminder::complete_reminder,
+            reminder::pin_reminder,
             // 导入导出
             reminder::export_data,
             reminder::import_data,
