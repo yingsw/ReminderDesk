@@ -1,6 +1,6 @@
 [package]
 name = "reminder-app"
-version = "0.1.7"
+version = "0.1.9"
 edition = "2021"
 description = "任务提醒助手"
 authors = ["应圣卫 <浙江巨鼎包装有限公司>"]

@@ -13,6 +13,8 @@ use tauri::{AppHandle, Manager};
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             // 初始化数据库
             database::init_database(&app.handle())?;

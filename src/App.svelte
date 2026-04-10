@@ -50,7 +50,9 @@
   let editCategoryId = $state(null);
   let editDueDate = $state('');
   let editDueTime = $state('18:00');
-  let editReminderFunction = $state('完成时间提醒');
+  let editReminderMode = $state('builtin');
+  let editSelectedReminderFunction = $state(0);
+  let editCustomExpression = $state('DueTime-1h');
   let editingCategory = $state(null);
   let newCategoryName = $state('');
   let newCategoryColor = $state('#3b82f6');
@@ -325,12 +327,27 @@
     const date = new Date(task.due_time);
     editDueDate = date.toISOString().split('T')[0];
     editDueTime = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-    editReminderFunction = task.reminder_function || '完成时间提醒';
+
+    // 判断是内置函数还是自定义公式
+    const func = task.reminder_function || '完成时间提醒';
+    const funcIndex = reminderFunctions.indexOf(func);
+    if (funcIndex >= 0) {
+      editReminderMode = 'builtin';
+      editSelectedReminderFunction = funcIndex;
+    } else {
+      editReminderMode = 'custom';
+      editCustomExpression = func;
+    }
+
     showEditModal = true;
   }
 
   async function saveEditTask() {
     if (!editTitle.trim() || !editingTask) return;
+
+    const reminderFunction = editReminderMode === 'builtin'
+      ? reminderFunctions[editSelectedReminderFunction]
+      : editCustomExpression;
 
     try {
       await invoke('update_reminder', {
@@ -340,7 +357,7 @@
         priority: editPriority,
         categoryId: editCategoryId,
         dueTime: `${editDueDate}T${editDueTime}`,
-        reminderFunction: editReminderFunction
+        reminderFunction: reminderFunction
       });
       showEditModal = false;
       editingTask = null;
@@ -1086,11 +1103,19 @@
 
         <div style="margin-bottom: 14px;">
           <label style="display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 4px;">提醒功能</label>
-          <select bind:value={editReminderFunction} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white; cursor: pointer;">
-            {#each reminderFunctions as f}
-              <option value={f}>{f}</option>
-            {/each}
-          </select>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button onclick={() => editReminderMode = 'builtin'} style="flex: 1; padding: 6px 0; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {editReminderMode === 'builtin' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {editReminderMode === 'builtin' ? 'white' : '#64748b'};">内置函数</button>
+            <button onclick={() => editReminderMode = 'custom'} style="flex: 1; padding: 6px 0; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; background: {editReminderMode === 'custom' ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f1f5f9'}; color: {editReminderMode === 'custom' ? 'white' : '#64748b'};">自定义公式</button>
+          </div>
+          {#if editReminderMode === 'builtin'}
+            <select bind:value={editSelectedReminderFunction} style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; background: white; cursor: pointer;">
+              {#each reminderFunctions as f, i}
+                <option value={i}>{f}</option>
+              {/each}
+            </select>
+          {:else}
+            <input type="text" bind:value={editCustomExpression} placeholder="例如：DueTime-1h" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none;" />
+          {/if}
         </div>
 
         <div style="display: flex; gap: 8px;">
