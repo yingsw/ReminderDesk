@@ -37,9 +37,13 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 
     let app_handle = app.clone();
 
+    // 启动时立即检查一次
+    check_and_notify(&app_handle);
+
     tauri::async_runtime::spawn(async move {
         loop {
-            tokio::time::sleep(Duration::from_secs(60)).await;
+            // 每10秒检查一次，避免错过提醒
+            tokio::time::sleep(Duration::from_secs(10)).await;
             check_and_notify(&app_handle);
 
             // 每分钟检查是否需要生成新的循环任务实例
@@ -94,12 +98,12 @@ fn check_and_notify(app: &AppHandle) {
     for reminder_result in reminders {
         if let Ok(reminder) = reminder_result {
             if let Some(reminder_time) = calculate_reminder_time(&reminder.due_time, &reminder.reminder_function) {
-                // 检查提醒时间是否已经到达（在过去60秒内或即将在30秒内）
+                // 检查提醒时间是否已经到达
                 let diff = reminder_time - now;
                 let diff_secs = diff.num_seconds();
 
-                // 提醒时间在过去60秒到未来30秒之间
-                if diff_secs >= -60 && diff_secs <= 30 {
+                // 提醒时间在过去90秒到未来10秒之间（扩大窗口确保不错过）
+                if diff_secs >= -90 && diff_secs <= 10 {
                     // 检查是否已经提醒过
                     let should_notify = unsafe {
                         if let Some(ref mut notified) = NOTIFIED_IDS {

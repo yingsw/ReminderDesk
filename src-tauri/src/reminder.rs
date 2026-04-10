@@ -366,7 +366,7 @@ pub fn calculate_reminder_time(due_time: &str, function: &str) -> Option<DateTim
 fn parse_custom_expression(due: DateTime<Local>, expr: &str) -> Option<DateTime<Local>> {
     let expr = expr.trim().to_lowercase();
 
-    // DueTime-1h, DueTime+30m
+    // DueTime-1h, DueTime+30m, DueTime-1d
     if expr.starts_with("duetime") {
         let offset = &expr[7..];
         return apply_offset(due, offset);
@@ -397,16 +397,40 @@ fn parse_custom_expression(due: DateTime<Local>, expr: &str) -> Option<DateTime<
         return base.and_then(|b| apply_offset(b, offset));
     }
 
+    // 默认返回到期时间
     Some(due)
 }
 
 fn apply_offset(base: DateTime<Local>, offset: &str) -> Option<DateTime<Local>> {
     let offset = offset.trim();
-    if offset.is_empty() { return Some(base); }
+    if offset.is_empty() {
+        return Some(base);
+    }
 
-    let sign = if offset.starts_with('+') { 1i64 } else if offset.starts_with('-') { -1i64 } else { return Some(base); };
-    let num_str: String = offset.chars().skip(1).filter(|c| c.is_ascii_digit()).collect();
+    // 解析符号
+    let sign: i64 = if offset.starts_with('+') {
+        1
+    } else if offset.starts_with('-') {
+        -1
+    } else {
+        // 没有符号，直接返回原时间
+        return Some(base);
+    };
+
+    // 获取单位（最后一个字符）
     let unit = offset.chars().last()?;
+
+    // 提取数字部分：跳过符号，收集数字字符
+    let num_str: String = offset
+        .chars()
+        .skip(1)
+        .take_while(|c| c.is_ascii_digit())
+        .collect();
+
+    if num_str.is_empty() {
+        return Some(base);
+    }
+
     let num: i64 = num_str.parse().ok()?;
 
     match unit {

@@ -1,5 +1,6 @@
 <script>
   import { invoke } from '@tauri-apps/api/core';
+  import { onMount } from 'svelte';
 
   // ==================== 状态 ====================
   let reminders = $state([]);
@@ -11,6 +12,9 @@
   let selectedCategory = $state(null);
   let selectedStatus = $state('all');
   let sortBy = $state('due_time'); // 排序方式：due_time, created_at, priority
+
+  // 用于刷新倒计时的计数器
+  let tick = $state(0);
 
   // 新任务表单
   let newTitle = $state('');
@@ -614,6 +618,7 @@
 
   // 计算提醒倒计时
   function getReminderRemaining(dueTime, reminderFunction, isCompleted) {
+    tick; // 读取tick触发响应式更新
     if (isCompleted) return '已完成';
 
     const reminderTime = getReminderTime(dueTime, reminderFunction);
@@ -625,8 +630,10 @@
     const mins = Math.floor(diff / 60000);
     const hrs = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
+    const secs = Math.floor(diff / 1000) % 60;
 
-    if (mins < 60) return `${mins}分钟后提醒`;
+    if (mins < 1) return `${secs}秒后提醒`;
+    if (mins < 60) return `${mins}分${secs}秒后提醒`;
     if (hrs < 24) return `${hrs}小时后提醒`;
     return `${days}天后提醒`;
   }
@@ -829,6 +836,14 @@
   loadCategories();
   loadReminders();
   loadRecurringTemplates();
+
+  // 每秒刷新倒计时
+  onMount(() => {
+    const interval = setInterval(() => {
+      tick++;
+    }, 1000);
+    return () => clearInterval(interval);
+  });
 </script>
 
 <main style="padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: 'Segoe UI', system-ui, sans-serif;">
