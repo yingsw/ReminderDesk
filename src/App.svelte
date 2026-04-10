@@ -85,7 +85,7 @@
   ];
 
   // 时间选项
-  const timeOptions = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+  const timeOptions = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
 
   // 提醒函数
   const reminderFunctions = [
@@ -536,6 +536,111 @@
     return categories.find(c => c.id === id);
   }
 
+  // 根据任务计算提醒时间
+  function getReminderTime(dueTime, reminderFunction) {
+    const dueDate = new Date(dueTime);
+    let reminderTime = new Date(dueDate);
+
+    const func = reminderFunction || '完成时间提醒';
+    switch (func) {
+      case '完成时间提醒': break;
+      case '提前5分钟': reminderTime = new Date(dueDate.getTime() - 5 * 60000); break;
+      case '提前10分钟': reminderTime = new Date(dueDate.getTime() - 10 * 60000); break;
+      case '提前15分钟': reminderTime = new Date(dueDate.getTime() - 15 * 60000); break;
+      case '提前20分钟': reminderTime = new Date(dueDate.getTime() - 20 * 60000); break;
+      case '提前30分钟': reminderTime = new Date(dueDate.getTime() - 30 * 60000); break;
+      case '提前45分钟': reminderTime = new Date(dueDate.getTime() - 45 * 60000); break;
+      case '提前1小时': reminderTime = new Date(dueDate.getTime() - 60 * 60000); break;
+      case '提前2小时': reminderTime = new Date(dueDate.getTime() - 120 * 60000); break;
+      case '提前3小时': reminderTime = new Date(dueDate.getTime() - 180 * 60000); break;
+      case '提前6小时': reminderTime = new Date(dueDate.getTime() - 360 * 60000); break;
+      case '提前12小时': reminderTime = new Date(dueDate.getTime() - 720 * 60000); break;
+      case '提前1天': reminderTime = new Date(dueDate.getTime() - 1440 * 60000); break;
+      case '提前2天': reminderTime = new Date(dueDate.getTime() - 2880 * 60000); break;
+      case '提前3天': reminderTime = new Date(dueDate.getTime() - 4320 * 60000); break;
+      case '提前1周': reminderTime = new Date(dueDate.getTime() - 10080 * 60000); break;
+      case '当天早上7点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T07:00`);
+        break;
+      case '当天早上8点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T08:00`);
+        break;
+      case '当天早上9点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T09:00`);
+        break;
+      case '当天中午12点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T12:00`);
+        break;
+      case '当天傍晚17点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T17:00`);
+        break;
+      case '当天傍晚18点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T18:00`);
+        break;
+      case '当天晚上20点':
+        reminderTime = new Date(`${dueDate.toISOString().split('T')[0]}T20:00`);
+        break;
+      case '第二天早上8点':
+        const tomorrow1 = new Date(dueDate);
+        tomorrow1.setDate(tomorrow1.getDate() + 1);
+        reminderTime = new Date(`${tomorrow1.toISOString().split('T')[0]}T08:00`);
+        break;
+      case '第二天早上9点':
+        const tomorrow2 = new Date(dueDate);
+        tomorrow2.setDate(tomorrow2.getDate() + 1);
+        reminderTime = new Date(`${tomorrow2.toISOString().split('T')[0]}T09:00`);
+        break;
+      default:
+        // 自定义表达式
+        const expr = func.trim().toLowerCase();
+        if (expr.startsWith('duetime')) {
+          const offset = expr.substring(7).trim();
+          reminderTime = applyOffset(dueDate, offset);
+        } else if (expr.startsWith('date')) {
+          const offset = expr.substring(4).trim();
+          const baseDate = new Date(`${dueDate.toISOString().split('T')[0]}T00:00`);
+          reminderTime = applyOffset(baseDate, offset);
+        } else if (expr.startsWith('tomorrow')) {
+          const offset = expr.substring(8).trim();
+          const tomorrow = new Date(dueDate);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const baseDate = new Date(`${tomorrow.toISOString().split('T')[0]}T00:00`);
+          reminderTime = applyOffset(baseDate, offset);
+        }
+    }
+
+    return reminderTime;
+  }
+
+  // 计算提醒倒计时
+  function getReminderRemaining(dueTime, reminderFunction, isCompleted) {
+    if (isCompleted) return '已完成';
+
+    const reminderTime = getReminderTime(dueTime, reminderFunction);
+    const now = new Date();
+    const diff = reminderTime.getTime() - now.getTime();
+
+    if (diff <= 0) return '已提醒';
+
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 60) return `${mins}分钟后提醒`;
+    if (hrs < 24) return `${hrs}小时后提醒`;
+    return `${days}天后提醒`;
+  }
+
+  // 格式化提醒时间显示
+  function formatReminderTimeShort(dueTime, reminderFunction) {
+    const reminderTime = getReminderTime(dueTime, reminderFunction);
+    const month = reminderTime.getMonth() + 1;
+    const day = reminderTime.getDate();
+    const hour = String(reminderTime.getHours()).padStart(2, '0');
+    const minute = String(reminderTime.getMinutes()).padStart(2, '0');
+    return `${month}/${day} ${hour}:${minute}`;
+  }
+
   // 计算提醒时间
   function calculateReminderTime() {
     const dueDate = new Date(`${newDueDate}T${newDueTime}`);
@@ -648,6 +753,75 @@
 
   let reminderTimeDisplay = $derived(() => {
     const reminderTime = calculateReminderTime();
+    return formatReminderTime(reminderTime);
+  });
+
+  // 编辑任务的提醒时间计算
+  function editCalculateReminderTime() {
+    const dueDate = new Date(`${editDueDate}T${editDueTime}`);
+    let reminderTime = new Date(dueDate);
+
+    if (editReminderMode === 'builtin') {
+      const func = reminderFunctions[editSelectedReminderFunction];
+      switch (func) {
+        case '完成时间提醒': break;
+        case '提前5分钟': reminderTime = new Date(dueDate.getTime() - 5 * 60000); break;
+        case '提前10分钟': reminderTime = new Date(dueDate.getTime() - 10 * 60000); break;
+        case '提前15分钟': reminderTime = new Date(dueDate.getTime() - 15 * 60000); break;
+        case '提前20分钟': reminderTime = new Date(dueDate.getTime() - 20 * 60000); break;
+        case '提前30分钟': reminderTime = new Date(dueDate.getTime() - 30 * 60000); break;
+        case '提前45分钟': reminderTime = new Date(dueDate.getTime() - 45 * 60000); break;
+        case '提前1小时': reminderTime = new Date(dueDate.getTime() - 60 * 60000); break;
+        case '提前2小时': reminderTime = new Date(dueDate.getTime() - 120 * 60000); break;
+        case '提前3小时': reminderTime = new Date(dueDate.getTime() - 180 * 60000); break;
+        case '提前6小时': reminderTime = new Date(dueDate.getTime() - 360 * 60000); break;
+        case '提前12小时': reminderTime = new Date(dueDate.getTime() - 720 * 60000); break;
+        case '提前1天': reminderTime = new Date(dueDate.getTime() - 1440 * 60000); break;
+        case '提前2天': reminderTime = new Date(dueDate.getTime() - 2880 * 60000); break;
+        case '提前3天': reminderTime = new Date(dueDate.getTime() - 4320 * 60000); break;
+        case '提前1周': reminderTime = new Date(dueDate.getTime() - 10080 * 60000); break;
+        case '当天早上7点':
+          reminderTime = new Date(`${editDueDate}T07:00`);
+          break;
+        case '当天早上8点':
+          reminderTime = new Date(`${editDueDate}T08:00`);
+          break;
+        case '当天早上9点':
+          reminderTime = new Date(`${editDueDate}T09:00`);
+          break;
+        case '当天中午12点':
+          reminderTime = new Date(`${editDueDate}T12:00`);
+          break;
+        case '当天傍晚17点':
+          reminderTime = new Date(`${editDueDate}T17:00`);
+          break;
+        case '当天傍晚18点':
+          reminderTime = new Date(`${editDueDate}T18:00`);
+          break;
+        case '当天晚上20点':
+          reminderTime = new Date(`${editDueDate}T20:00`);
+          break;
+        case '第二天早上8点':
+          const tomorrow1 = new Date(dueDate);
+          tomorrow1.setDate(tomorrow1.getDate() + 1);
+          reminderTime = new Date(`${tomorrow1.toISOString().split('T')[0]}T08:00`);
+          break;
+        case '第二天早上9点':
+          const tomorrow2 = new Date(dueDate);
+          tomorrow2.setDate(tomorrow2.getDate() + 1);
+          reminderTime = new Date(`${tomorrow2.toISOString().split('T')[0]}T09:00`);
+          break;
+      }
+    } else {
+      const expr = editCustomExpression.trim().toLowerCase();
+      reminderTime = parseCustomExpression(dueDate, expr);
+    }
+
+    return reminderTime;
+  }
+
+  let editReminderTimeDisplay = $derived(() => {
+    const reminderTime = editCalculateReminderTime();
     return formatReminderTime(reminderTime);
   });
 
@@ -923,8 +1097,11 @@
                       <span style="background: {reminder.category_color || '#3b82f6'}20; color: {reminder.category_color || '#3b82f6'}; padding: 3px 8px; border-radius: 5px; font-weight: 600;">{reminder.category_name}</span>
                     {/if}
                     <span style="background: {getPriority(reminder.priority).bg}; color: {getPriority(reminder.priority).color}; padding: 3px 8px; border-radius: 5px; font-weight: 600;">{getPriority(reminder.priority).label}</span>
-                    <span style="color: #94a3b8;">{formatDate(reminder.due_time)}</span>
-                    <span style="color: {reminder.is_completed ? '#22c55e' : new Date(reminder.due_time) < new Date() ? '#ef4444' : '#f97316'}; font-weight: 600;">{getRemaining(reminder.due_time, reminder.is_completed)}</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; margin-top: 4px;">
+                    <span style="color: #64748b;">到期: {formatDate(reminder.due_time)}</span>
+                    <span style="color: #667eea; font-weight: 600;">⏰ {formatReminderTimeShort(reminder.due_time, reminder.reminder_function)}</span>
+                    <span style="color: {reminder.is_completed ? '#22c55e' : getReminderRemaining(reminder.due_time, reminder.reminder_function, reminder.is_completed) === '已提醒' ? '#ef4444' : '#f97316'}; font-weight: 600;">{getReminderRemaining(reminder.due_time, reminder.reminder_function, reminder.is_completed)}</span>
                   </div>
                 </div>
                 <!-- 操作 -->
@@ -1116,6 +1293,17 @@
           {:else}
             <input type="text" bind:value={editCustomExpression} placeholder="例如：DueTime-1h" style="width: 100%; padding: 8px 10px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none;" />
           {/if}
+        </div>
+
+        <!-- 提醒时间预览 -->
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; padding: 12px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(102,126,234,0.3);">
+          <div style="color: rgba(255,255,255,0.85); font-size: 11px; margin-bottom: 4px;">
+            提醒时间预览
+            <span style="margin-left: 6px; padding: 2px 6px; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px;">
+              {editReminderMode === 'builtin' ? reminderFunctions[editSelectedReminderFunction] : editCustomExpression}
+            </span>
+          </div>
+          <div style="color: white; font-size: 16px; font-weight: 700;">{editReminderTimeDisplay()}</div>
         </div>
 
         <div style="display: flex; gap: 8px;">
