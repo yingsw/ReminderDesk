@@ -4,7 +4,7 @@ use crate::recurring;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_notification::NotificationExt;
 
 static SCHEDULER_RUNNING: AtomicBool = AtomicBool::new(false);
@@ -42,11 +42,12 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     println!("[Scheduler] 启动时立即检查任务");
     check_and_notify(&app_handle);
 
-    tauri::async_runtime::spawn(async move {
+    // 使用标准线程而不是异步运行时
+    std::thread::spawn(move || {
         let mut count = 0;
         loop {
-            // 每10秒检查一次，避免错过提醒
-            tokio::time::sleep(Duration::from_secs(10)).await;
+            // 每10秒检查一次
+            std::thread::sleep(Duration::from_secs(10));
             count += 1;
             println!("[Scheduler] 第{}次检查任务", count);
             check_and_notify(&app_handle);
