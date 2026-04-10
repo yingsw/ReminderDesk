@@ -12,7 +12,7 @@ static mut NOTIFIED_IDS: Option<HashSet<String>> = None;
 
 pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     if SCHEDULER_RUNNING.load(Ordering::SeqCst) {
-        return Ok(());
+        return Ok(())
     }
 
     SCHEDULER_RUNNING.store(true, Ordering::SeqCst);
@@ -21,6 +21,14 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     unsafe {
         NOTIFIED_IDS = Some(HashSet::new());
     }
+
+    // 启动时发送测试通知，确认通知功能正常
+    let _ = app
+        .notification()
+        .builder()
+        .title("任务提醒助手已启动")
+        .body("通知功能已就绪，将按时提醒您的任务")
+        .show();
 
     // 启动时立即生成一次循环任务
     if let Some(db) = app.try_state::<DbState>() {
