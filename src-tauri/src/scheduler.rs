@@ -4,7 +4,7 @@ use crate::recurring;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_notification::NotificationExt;
 
 static SCHEDULER_RUNNING: AtomicBool = AtomicBool::new(false);
@@ -23,6 +23,7 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     }
 
     // 启动时发送测试通知，确认通知功能正常
+    println!("[Scheduler] 发送启动通知");
     let _ = app
         .notification()
         .builder()
@@ -38,17 +39,23 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     let app_handle = app.clone();
 
     // 启动时立即检查一次
+    println!("[Scheduler] 启动时立即检查任务");
     check_and_notify(&app_handle);
 
     tauri::async_runtime::spawn(async move {
+        let mut count = 0;
         loop {
             // 每10秒检查一次，避免错过提醒
             tokio::time::sleep(Duration::from_secs(10)).await;
+            count += 1;
+            println!("[Scheduler] 第{}次检查任务", count);
             check_and_notify(&app_handle);
 
             // 每分钟检查是否需要生成新的循环任务实例
-            if let Some(db) = app_handle.try_state::<DbState>() {
-                let _ = recurring::generate_upcoming_instances(&db);
+            if count % 6 == 0 {
+                if let Some(db) = app_handle.try_state::<DbState>() {
+                    let _ = recurring::generate_upcoming_instances(&db);
+                }
             }
         }
     });
@@ -59,17 +66,24 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 fn check_and_notify(app: &AppHandle) {
     let db = match app.try_state::<DbState>() {
         Some(db) => db,
-        None => return,
+        None => {
+            println!("[Scheduler] 无法获取数据库状态");
+            return;
+        }
     };
 
     let conn = match db.0.lock() {
         Ok(c) => c,
-        Err(_) => return,
+        Err(_) => {
+            println!("[Scheduler] 无法锁定数据库连接");
+            return;
+        }
     };
 
     let Ok(mut stmt) = conn.prepare(
         "SELECT id, title, description, priority, category_id, due_time, reminder_function, is_completed, is_pinned, created_at, template_id FROM reminders WHERE is_completed = 0"
     ) else {
+        println!("[Scheduler] 无法准备查询语句");
         return;
     };
 
@@ -90,46 +104,59 @@ fn check_and_notify(app: &AppHandle) {
             template_id: row.get(10)?,
         })
     }) else {
+        println!("[Scheduler] 无法查询任务");
         return;
     };
 
     let now = chrono::Local::now();
+    println!("[Scheduler] 当前时间: {}", now.format("%Y-%m-%d %H:%M:%S"));
 
-    for reminder_result in reminders {
-        if let Ok(reminder) = reminder_result {
-            if let Some(reminder_time) = calculate_reminder_time(&reminder.due_time, &reminder.reminder_function) {
-                // 检查提醒时间是否已经到达
-                let diff = reminder_time - now;
-                let diff_secs = diff.num_seconds();
+    let reminders_vec: Vec<Reminder> = reminders.collect::<Result<Vec<_>, _>>().unwrap_or_default();
+    println!("[Scheduler] 找到 {} 个未完成任务", reminders_vec.len());
 
-                // 提醒时间在过去90秒到未来10秒之间（扩大窗口确保不错过）
-                if diff_secs >= -90 && diff_secs <= 10 {
-                    // 检查是否已经提醒过
-                    let should_notify = unsafe {
-                        if let Some(ref mut notified) = NOTIFIED_IDS {
-                            if notified.contains(&reminder.id) {
-                                false
-                            } else {
-                                notified.insert(reminder.id.clone());
-                                true
-                            }
+    for reminder in reminders_vec {
+        println!("[Scheduler] 检查任务: {} (提醒函数: {})", reminder.title, reminder.reminder_function);
+
+        if let Some(reminder_time) = calculate_reminder_time(&reminder.due_time, &reminder.reminder_function) {
+            let diff = reminder_time - now;
+            let diff_secs = diff.num_seconds();
+
+            println!("[Scheduler] 提醒时间: {}, 与当前时间差: {}秒",
+                reminder_time.format("%Y-%m-%d %H:%M:%S"), diff_secs);
+
+            // 提醒时间在过去90秒到未来10秒之间（扩大窗口确保不错过）
+            if diff_secs >= -90 && diff_secs <= 10 {
+                println!("[Scheduler] 任务 {} 进入提醒窗口!", reminder.title);
+
+                // 检查是否已经提醒过
+                let should_notify = unsafe {
+                    if let Some(ref mut notified) = NOTIFIED_IDS {
+                        if notified.contains(&reminder.id) {
+                            println!("[Scheduler] 任务 {} 已经提醒过，跳过", reminder.title);
+                            false
                         } else {
+                            notified.insert(reminder.id.clone());
+                            println!("[Scheduler] 任务 {} 标记为需要提醒", reminder.title);
                             true
                         }
-                    };
-
-                    if should_notify {
-                        send_notification(app, &reminder);
+                    } else {
+                        true
                     }
+                };
+
+                if should_notify {
+                    println!("[Scheduler] 发送通知: {}", reminder.title);
+                    send_notification(app, &reminder);
                 }
             }
+        } else {
+            println!("[Scheduler] 无法计算提醒时间: {}", reminder.title);
         }
     }
 
-    // 清理过期的已提醒ID（超过1小时的）
+    // 清理过期的已提醒ID
     unsafe {
         if let Some(ref mut notified) = NOTIFIED_IDS {
-            // 简单清理：每隔一段时间清空集合，防止内存增长
             if notified.len() > 1000 {
                 notified.clear();
             }
@@ -146,10 +173,21 @@ fn send_notification(app: &AppHandle, reminder: &Reminder) {
         _ => "",
     };
 
-    let _ = app
+    let title = format!("⏰ {}", reminder.title);
+    let body = format!("{} - {}", priority_text, reminder.description);
+
+    println!("[Notification] 发送通知标题: {}", title);
+    println!("[Notification] 发送通知内容: {}", body);
+
+    let result = app
         .notification()
         .builder()
-        .title(format!("⏰ {}", reminder.title))
-        .body(format!("{} - {}", priority_text, reminder.description))
+        .title(&title)
+        .body(&body)
         .show();
+
+    match result {
+        Ok(_) => println!("[Notification] 通知发送成功"),
+        Err(e) => println!("[Notification] 通知发送失败: {}", e),
+    }
 }

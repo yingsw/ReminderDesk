@@ -2,6 +2,7 @@ use crate::database::DbState;
 use serde::{Deserialize, Serialize};
 use tauri::{command, State};
 use chrono::{DateTime, Local, Duration, Datelike, Weekday};
+use tauri_plugin_notification::NotificationExt;
 
 // ==================== 分类 ====================
 
@@ -133,6 +134,17 @@ pub struct GetRemindersParams {
     pub category_id: Option<i32>,
     pub status: Option<String>, // "all", "pending", "completed"
     pub sort_by: Option<String>, // "due_time", "created_at", "priority"
+}
+
+#[command]
+pub fn test_notification(app: tauri::AppHandle) -> Result<(), String> {
+    let _ = app
+        .notification()
+        .builder()
+        .title("手动测试通知")
+        .body("这是手动触发的测试通知")
+        .show();
+    Ok(())
 }
 
 #[command]

@@ -122,6 +122,16 @@
   // 月份日期选项（1-31）
   const monthDayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
 
+  // ==================== 测试通知 ====================
+  async function testNotification() {
+    try {
+      await invoke('test_notification');
+    } catch (e) {
+      console.error('测试通知失败:', e);
+      alert('测试通知失败: ' + e);
+    }
+  }
+
   // ==================== 加载函数 ====================
   async function loadCategories() {
     try {
@@ -865,6 +875,7 @@
         <button onclick={exportData} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📤 导出</button>
         <button onclick={() => showImportModal = true} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📥 导入</button>
         <button onclick={() => showHelp = true} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">📖 帮助</button>
+        <button onclick={testNotification} style="padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 18px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;">🔔 测试通知</button>
       </div>
     </header>
 
