@@ -125,8 +125,9 @@ fn check_and_notify(app: &AppHandle) {
             println!("[Scheduler] 提醒时间: {}, 与当前时间差: {}秒",
                 reminder_time.format("%Y-%m-%d %H:%M:%S"), diff_secs);
 
-            // 提醒时间在过去90秒到未来10秒之间（扩大窗口确保不错过）
-            if diff_secs >= -90 && diff_secs <= 10 {
+            // 扩大窗口：提醒时间在未来120秒到过去120秒之间
+            // 10秒检测间隔 + 120秒窗口 = 绝对不会错过
+            if diff_secs >= -120 && diff_secs <= 120 {
                 println!("[Scheduler] 任务 {} 进入提醒窗口!", reminder.title);
 
                 // 检查是否已经提醒过
