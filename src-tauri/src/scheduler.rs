@@ -4,11 +4,11 @@ use crate::recurring;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_notification::NotificationExt;
 
 static SCHEDULER_RUNNING: AtomicBool = AtomicBool::new(false);
-static mut NOTIFIED_IDS: Option<HashSet<String>> = None;
+static mut NOTIFIED_KEYS: Option<HashSet<String>> = None;
 
 pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     if SCHEDULER_RUNNING.load(Ordering::SeqCst) {
@@ -19,17 +19,8 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 
     // 初始化已提醒ID集合
     unsafe {
-        NOTIFIED_IDS = Some(HashSet::new());
+        NOTIFIED_KEYS = Some(HashSet::new());
     }
-
-    // 启动时发送测试通知，确认通知功能正常
-    println!("[Scheduler] 发送启动通知");
-    let _ = app
-        .notification()
-        .builder()
-        .title("任务提醒助手已启动")
-        .body("通知功能已就绪，将按时提醒您的任务")
-        .show();
 
     // 启动时立即生成一次循环任务
     if let Some(db) = app.try_state::<DbState>() {
@@ -39,17 +30,14 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     let app_handle = app.clone();
 
     // 启动时立即检查一次
-    println!("[Scheduler] 启动时立即检查任务");
     check_and_notify(&app_handle);
 
-    // 使用标准线程而不是异步运行时
+    // 使用标准线程运行调度器
     std::thread::spawn(move || {
         let mut count = 0;
         loop {
-            // 每10秒检查一次
             std::thread::sleep(Duration::from_secs(10));
             count += 1;
-            println!("[Scheduler] 第{}次检查任务", count);
             check_and_notify(&app_handle);
 
             // 每分钟检查是否需要生成新的循环任务实例
@@ -67,24 +55,17 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 fn check_and_notify(app: &AppHandle) {
     let db = match app.try_state::<DbState>() {
         Some(db) => db,
-        None => {
-            println!("[Scheduler] 无法获取数据库状态");
-            return;
-        }
+        None => return,
     };
 
     let conn = match db.0.lock() {
         Ok(c) => c,
-        Err(_) => {
-            println!("[Scheduler] 无法锁定数据库连接");
-            return;
-        }
+        Err(_) => return,
     };
 
     let Ok(mut stmt) = conn.prepare(
         "SELECT id, title, description, priority, category_id, due_time, reminder_function, is_completed, is_pinned, created_at, template_id FROM reminders WHERE is_completed = 0"
     ) else {
-        println!("[Scheduler] 无法准备查询语句");
         return;
     };
 
@@ -105,40 +86,28 @@ fn check_and_notify(app: &AppHandle) {
             template_id: row.get(10)?,
         })
     }) else {
-        println!("[Scheduler] 无法查询任务");
         return;
     };
 
     let now = chrono::Local::now();
-    println!("[Scheduler] 当前时间: {}", now.format("%Y-%m-%d %H:%M:%S"));
-
     let reminders_vec: Vec<Reminder> = reminders.collect::<Result<Vec<_>, _>>().unwrap_or_default();
-    println!("[Scheduler] 找到 {} 个未完成任务", reminders_vec.len());
 
     for reminder in reminders_vec {
-        println!("[Scheduler] 检查任务: {} (提醒函数: {})", reminder.title, reminder.reminder_function);
-
         if let Some(reminder_time) = calculate_reminder_time(&reminder.due_time, &reminder.reminder_function) {
             let diff = reminder_time - now;
             let diff_secs = diff.num_seconds();
 
-            println!("[Scheduler] 提醒时间: {}, 与当前时间差: {}秒",
-                reminder_time.format("%Y-%m-%d %H:%M:%S"), diff_secs);
+            // 精确提醒窗口：提醒时间前后10秒内触发
+            if diff_secs >= -10 && diff_secs <= 10 {
+                // 使用 ID + 提醒时间 作为唯一键
+                let notification_key = format!("{}_{}", reminder.id, reminder_time.format("%Y%m%d%H%M"));
 
-            // 扩大窗口：提醒时间在未来120秒到过去120秒之间
-            // 10秒检测间隔 + 120秒窗口 = 绝对不会错过
-            if diff_secs >= -120 && diff_secs <= 120 {
-                println!("[Scheduler] 任务 {} 进入提醒窗口!", reminder.title);
-
-                // 检查是否已经提醒过
                 let should_notify = unsafe {
-                    if let Some(ref mut notified) = NOTIFIED_IDS {
-                        if notified.contains(&reminder.id) {
-                            println!("[Scheduler] 任务 {} 已经提醒过，跳过", reminder.title);
+                    if let Some(ref mut notified) = NOTIFIED_KEYS {
+                        if notified.contains(&notification_key) {
                             false
                         } else {
-                            notified.insert(reminder.id.clone());
-                            println!("[Scheduler] 任务 {} 标记为需要提醒", reminder.title);
+                            notified.insert(notification_key.clone());
                             true
                         }
                     } else {
@@ -147,19 +116,16 @@ fn check_and_notify(app: &AppHandle) {
                 };
 
                 if should_notify {
-                    println!("[Scheduler] 发送通知: {}", reminder.title);
                     send_notification(app, &reminder);
                 }
             }
-        } else {
-            println!("[Scheduler] 无法计算提醒时间: {}", reminder.title);
         }
     }
 
-    // 清理过期的已提醒ID
+    // 清理过期的已提醒键
     unsafe {
-        if let Some(ref mut notified) = NOTIFIED_IDS {
-            if notified.len() > 1000 {
+        if let Some(ref mut notified) = NOTIFIED_KEYS {
+            if notified.len() > 500 {
                 notified.clear();
             }
         }
@@ -178,18 +144,119 @@ fn send_notification(app: &AppHandle, reminder: &Reminder) {
     let title = format!("⏰ {}", reminder.title);
     let body = format!("{} - {}", priority_text, reminder.description);
 
-    println!("[Notification] 发送通知标题: {}", title);
-    println!("[Notification] 发送通知内容: {}", body);
+    // 发送系统通知
+    let app_clone = app.clone();
+    let title_clone = title.clone();
+    let body_clone = body.clone();
 
-    let result = app
-        .notification()
-        .builder()
-        .title(&title)
-        .body(&body)
-        .show();
+    let _ = app.run_on_main_thread(move || {
+        let _ = app_clone
+            .notification()
+            .builder()
+            .title(&title_clone)
+            .body(&body_clone)
+            .show();
+    });
 
-    match result {
-        Ok(_) => println!("[Notification] 通知发送成功"),
-        Err(e) => println!("[Notification] 通知发送失败: {}", e),
-    }
+    // 同时显示持久化的提醒窗口
+    show_reminder_window(app, reminder);
+}
+
+fn show_reminder_window(app: &AppHandle, reminder: &Reminder) {
+    let priority_text = match reminder.priority {
+        0 => "低优先级",
+        1 => "中优先级",
+        2 => "高优先级",
+        3 => "紧急",
+        _ => "",
+    };
+
+    let label = format!("reminder_{}", reminder.id);
+    let title = format!("⏰ 任务提醒: {}", reminder.title);
+    let html_content = format!(
+        r#"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }}
+        .container {{
+            text-align: center;
+            max-width: 400px;
+        }}
+        .title {{
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }}
+        .priority {{
+            font-size: 14px;
+            color: #ffeb3b;
+            margin-bottom: 10px;
+        }}
+        .description {{
+            font-size: 16px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }}
+        .btn {{
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }}
+        .btn:hover {{
+            background: #45a049;
+            transform: scale(1.05);
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">⏰ {}</div>
+        <div class="priority">{}</div>
+        <div class="description">{}</div>
+        <button class="btn" onclick="window.close()">关闭提醒</button>
+    </div>
+</body>
+</html>"#,
+        reminder.title, priority_text, reminder.description
+    );
+
+    let app_clone = app.clone();
+    let label_clone = label.clone();
+    let title_clone = title.clone();
+    let data_url = format!("data:text/html;charset=utf-8,{}", urlencoding::encode(&html_content));
+
+    let _ = app.run_on_main_thread(move || {
+        let _ = WebviewWindowBuilder::new(
+            &app_clone,
+            &label_clone,
+            WebviewUrl::External(data_url.parse().unwrap())
+        )
+        .title(&title_clone)
+        .inner_size(400.0, 250.0)
+        .resizable(false)
+        .decorations(true)
+        .always_on_top(true)
+        .center()
+        .build();
+    });
 }

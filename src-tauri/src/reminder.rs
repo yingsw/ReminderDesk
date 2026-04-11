@@ -2,7 +2,6 @@ use crate::database::DbState;
 use serde::{Deserialize, Serialize};
 use tauri::{command, State};
 use chrono::{DateTime, Local, Duration, Datelike, Weekday};
-use tauri_plugin_notification::NotificationExt;
 
 // ==================== 分类 ====================
 
@@ -134,17 +133,6 @@ pub struct GetRemindersParams {
     pub category_id: Option<i32>,
     pub status: Option<String>, // "all", "pending", "completed"
     pub sort_by: Option<String>, // "due_time", "created_at", "priority"
-}
-
-#[command]
-pub fn test_notification(app: tauri::AppHandle) -> Result<(), String> {
-    let _ = app
-        .notification()
-        .builder()
-        .title("手动测试通知")
-        .body("这是手动触发的测试通知")
-        .show();
-    Ok(())
 }
 
 #[command]
@@ -337,13 +325,40 @@ pub fn update_reminder(db: State<DbState>, id: String, title: String, descriptio
 
 // ==================== 提醒时间计算 ====================
 
+/// 灵活解析多种日期时间格式
+fn parse_flexible_datetime(time_str: &str) -> Option<DateTime<Local>> {
+    // 尝试 RFC3339 完整格式 (带时区)
+    if let Ok(dt) = DateTime::parse_from_rfc3339(time_str) {
+        return Some(dt.with_timezone(&Local));
+    }
+
+    // 尝试简化格式: 2026-04-11T09:00 (缺少秒和时区)
+    // 补充秒数并使用本地时区
+    let time_str = time_str.trim();
+
+    // 格式: YYYY-MM-DDTHH:MM
+    if time_str.len() == 16 && time_str.chars().nth(10) == Some('T') {
+        let full_time = format!("{}:00", time_str); // 补充秒数
+        // 使用 NaiveDateTime 解析，然后转换为本地时间
+        if let Ok(naive_dt) = chrono::NaiveDateTime::parse_from_str(&full_time, "%Y-%m-%dT%H:%M:%S") {
+            return naive_dt.and_local_timezone(Local).single();
+        }
+    }
+
+    // 格式: YYYY-MM-DDTHH:MM:SS (有秒但无时区)
+    if time_str.len() == 19 && time_str.chars().nth(10) == Some('T') {
+        if let Ok(naive_dt) = chrono::NaiveDateTime::parse_from_str(time_str, "%Y-%m-%dT%H:%M:%S") {
+            return naive_dt.and_local_timezone(Local).single();
+        }
+    }
+
+    None
+}
+
 /// 计算提醒时间
 pub fn calculate_reminder_time(due_time: &str, function: &str) -> Option<DateTime<Local>> {
-    let due = DateTime::parse_from_rfc3339(due_time)
-        .map(|dt| dt.with_timezone(&Local))
-        .ok()?;
+    let due = parse_flexible_datetime(due_time)?;
 
-    // 内置函数
     match function {
         "完成时间提醒" => Some(due),
         "提前5分钟" => Some(due - Duration::minutes(5)),
@@ -376,31 +391,31 @@ pub fn calculate_reminder_time(due_time: &str, function: &str) -> Option<DateTim
 
 /// 解析自定义表达式
 fn parse_custom_expression(due: DateTime<Local>, expr: &str) -> Option<DateTime<Local>> {
-    let expr = expr.trim().to_lowercase();
+    let expr_lower = expr.trim().to_lowercase();
 
     // DueTime-1h, DueTime+30m, DueTime-1d
-    if expr.starts_with("duetime") {
-        let offset = &expr[7..];
+    if expr_lower.starts_with("duetime") {
+        let offset = &expr_lower[7..];
         return apply_offset(due, offset);
     }
 
     // Date+9h (当天指定时间)
-    if expr.starts_with("date") {
-        let offset = &expr[4..];
+    if expr_lower.starts_with("date") {
+        let offset = &expr_lower[4..];
         let base = due.date_naive().and_hms_opt(0, 0, 0).and_then(|t| t.and_local_timezone(Local).single());
         return base.and_then(|b| apply_offset(b, offset));
     }
 
     // Tomorrow+9h
-    if expr.starts_with("tomorrow") {
-        let offset = &expr[8..];
+    if expr_lower.starts_with("tomorrow") {
+        let offset = &expr_lower[8..];
         let base = (due.date_naive() + Duration::days(1)).and_hms_opt(0, 0, 0).and_then(|t| t.and_local_timezone(Local).single());
         return base.and_then(|b| apply_offset(b, offset));
     }
 
     // NextWorkday+9h
-    if expr.starts_with("nextworkday") {
-        let offset = &expr[11..];
+    if expr_lower.starts_with("nextworkday") {
+        let offset = &expr_lower[11..];
         let mut next = due.date_naive() + Duration::days(1);
         while next.weekday() == Weekday::Sat || next.weekday() == Weekday::Sun {
             next = next + Duration::days(1);
@@ -409,7 +424,6 @@ fn parse_custom_expression(due: DateTime<Local>, expr: &str) -> Option<DateTime<
         return base.and_then(|b| apply_offset(b, offset));
     }
 
-    // 默认返回到期时间
     Some(due)
 }
 
@@ -419,20 +433,15 @@ fn apply_offset(base: DateTime<Local>, offset: &str) -> Option<DateTime<Local>> 
         return Some(base);
     }
 
-    // 解析符号
     let sign: i64 = if offset.starts_with('+') {
         1
     } else if offset.starts_with('-') {
         -1
     } else {
-        // 没有符号，直接返回原时间
         return Some(base);
     };
 
-    // 获取单位（最后一个字符）
     let unit = offset.chars().last()?;
-
-    // 提取数字部分：跳过符号，收集数字字符
     let num_str: String = offset
         .chars()
         .skip(1)

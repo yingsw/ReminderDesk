@@ -1,7 +1,7 @@
 use crate::database::DbState;
 use serde::{Deserialize, Serialize};
 use tauri::{command, State};
-use chrono::{DateTime, Local, NaiveTime, Datelike, Weekday, Duration, Timelike};
+use chrono::{DateTime, Local, NaiveTime, Datelike, Duration, Timelike};
 use rusqlite::OptionalExtension;
 use uuid::Uuid;
 
