@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'unsafe-eval' data: blob: *;">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 360px;
+        }
+        .icon { font-size: 36px; margin-bottom: 8px; }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .priority {
+            font-size: 13px;
+            color: #ffeb3b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .description {
+            font-size: 14px;
+            margin-bottom: 16px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 8px;
+            word-break: break-word;
+            line-height: 1.5;
+            min-height: 20px;
+        }
+        .btn {
+            padding: 10px 36px;
+            font-size: 15px;
+            font-weight: 600;
+            background: #4caf50;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .btn:hover { background: #45a049; transform: scale(1.03); }
+        .btn:active { transform: scale(0.97); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">&#x23F0;</div>
+        <div class="title" id="reminderTitle">任务提醒</div>
+        <div class="priority" id="reminderPriority"></div>
+        <div class="description" id="reminderDescription"></div>
+        <button type="button" class="btn" id="closeBtn">我知道了</button>
+    </div>
+    <script>
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            if (typeof window.__TAURI__ !== 'undefined' && window.__TAURI__.invoke) {
+                window.__TAURI__.invoke('close_reminder_window');
+            } else {
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>

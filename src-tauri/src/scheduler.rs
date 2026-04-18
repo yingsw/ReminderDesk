@@ -4,11 +4,14 @@ use crate::recurring;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Manager, Url, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_notification::NotificationExt;
 
 static SCHEDULER_RUNNING: AtomicBool = AtomicBool::new(false);
 static mut NOTIFIED_KEYS: Option<HashSet<String>> = None;
+
+const CLOSE_SCHEME: &str = "tauri-ipc";
+const CLOSE_HOST: &str = "close-reminder";
 
 pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     if SCHEDULER_RUNNING.load(Ordering::SeqCst) {
@@ -17,22 +20,18 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
 
     SCHEDULER_RUNNING.store(true, Ordering::SeqCst);
 
-    // 初始化已提醒ID集合
     unsafe {
         NOTIFIED_KEYS = Some(HashSet::new());
     }
 
-    // 启动时立即生成一次循环任务
     if let Some(db) = app.try_state::<DbState>() {
         let _ = recurring::generate_upcoming_instances(&db);
     }
 
     let app_handle = app.clone();
 
-    // 启动时立即检查一次
     check_and_notify(&app_handle);
 
-    // 使用标准线程运行调度器
     std::thread::spawn(move || {
         let mut count = 0;
         loop {
@@ -40,7 +39,6 @@ pub fn start_scheduler(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>
             count += 1;
             check_and_notify(&app_handle);
 
-            // 每分钟检查是否需要生成新的循环任务实例
             if count % 6 == 0 {
                 if let Some(db) = app_handle.try_state::<DbState>() {
                     let _ = recurring::generate_upcoming_instances(&db);
@@ -60,12 +58,16 @@ fn check_and_notify(app: &AppHandle) {
 
     let conn = match db.0.lock() {
         Ok(c) => c,
-        Err(_) => return,
+        Err(_) => {
+            eprintln!("[scheduler] Failed to acquire DB lock, skipping check");
+            return;
+        }
     };
 
     let Ok(mut stmt) = conn.prepare(
         "SELECT id, title, description, priority, category_id, due_time, reminder_function, is_completed, is_pinned, created_at, template_id FROM reminders WHERE is_completed = 0"
     ) else {
+        eprintln!("[scheduler] Failed to prepare statement");
         return;
     };
 
@@ -86,6 +88,7 @@ fn check_and_notify(app: &AppHandle) {
             template_id: row.get(10)?,
         })
     }) else {
+        eprintln!("[scheduler] Failed to query reminders");
         return;
     };
 
@@ -97,9 +100,7 @@ fn check_and_notify(app: &AppHandle) {
             let diff = reminder_time - now;
             let diff_secs = diff.num_seconds();
 
-            // 精确提醒窗口：提醒时间前后10秒内触发
             if diff_secs >= -10 && diff_secs <= 10 {
-                // 使用 ID + 提醒时间 作为唯一键
                 let notification_key = format!("{}_{}", reminder.id, reminder_time.format("%Y%m%d%H%M"));
 
                 let should_notify = unsafe {
@@ -116,13 +117,13 @@ fn check_and_notify(app: &AppHandle) {
                 };
 
                 if should_notify {
+                    eprintln!("[scheduler] Triggering reminder for: {} (id={})", reminder.title, reminder.id);
                     send_notification(app, &reminder);
                 }
             }
         }
     }
 
-    // 清理过期的已提醒键
     unsafe {
         if let Some(ref mut notified) = NOTIFIED_KEYS {
             if notified.len() > 500 {
@@ -141,10 +142,9 @@ fn send_notification(app: &AppHandle, reminder: &Reminder) {
         _ => "",
     };
 
-    let title = format!("⏰ {}", reminder.title);
+    let title = format!(" 任务提醒: {}", reminder.title);
     let body = format!("{} - {}", priority_text, reminder.description);
 
-    // 发送系统通知
     let app_clone = app.clone();
     let title_clone = title.clone();
     let body_clone = body.clone();
@@ -158,8 +158,12 @@ fn send_notification(app: &AppHandle, reminder: &Reminder) {
             .show();
     });
 
-    // 同时显示持久化的提醒窗口
     show_reminder_window(app, reminder);
+}
+
+#[tauri::command]
+pub fn close_reminder_window(window: tauri::Window) {
+    let _ = window.close();
 }
 
 fn show_reminder_window(app: &AppHandle, reminder: &Reminder) {
@@ -172,91 +176,76 @@ fn show_reminder_window(app: &AppHandle, reminder: &Reminder) {
     };
 
     let label = format!("reminder_{}", reminder.id);
-    let title = format!("⏰ 任务提醒: {}", reminder.title);
-    let html_content = format!(
-        r#"<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body {{
-            font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }}
-        .container {{
-            text-align: center;
-            max-width: 400px;
-        }}
-        .title {{
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }}
-        .priority {{
-            font-size: 14px;
-            color: #ffeb3b;
-            margin-bottom: 10px;
-        }}
-        .description {{
-            font-size: 16px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-        }}
-        .btn {{
-            padding: 12px 30px;
-            font-size: 16px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }}
-        .btn:hover {{
-            background: #45a049;
-            transform: scale(1.05);
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="title">⏰ {}</div>
-        <div class="priority">{}</div>
-        <div class="description">{}</div>
-        <button class="btn" onclick="window.close()">关闭提醒</button>
-    </div>
-</body>
-</html>"#,
-        reminder.title, priority_text, reminder.description
-    );
+    let window_title = format!(" 任务提醒: {}", reminder.title);
 
     let app_clone = app.clone();
     let label_clone = label.clone();
-    let title_clone = title.clone();
-    let data_url = format!("data:text/html;charset=utf-8,{}", urlencoding::encode(&html_content));
+    let window_title_clone = window_title.clone();
+    let reminder_id = reminder.id.clone();
+
+    // The IPC URL to intercept: when clicked, we navigate to this and block+close
+    let close_url = Url::parse(&format!("{}://{}", CLOSE_SCHEME, CLOSE_HOST)).unwrap();
+    let close_url_for_nav = close_url.clone();
+    let app_for_nav = app_clone.clone();
+    let label_for_nav = label_clone.clone();
+
+    // Escape for JS string literal
+    let title_escaped = reminder.title.replace('\\', "\\\\").replace('\'', "\\'").replace('"', "\\\"");
+    let desc_escaped = reminder.description.replace('\\', "\\\\").replace('\'', "\\'").replace('"', "\\\"");
 
     let _ = app.run_on_main_thread(move || {
-        let _ = WebviewWindowBuilder::new(
+        if let Some(existing) = app_clone.get_webview_window(&label_clone) {
+            let _ = existing.close();
+        }
+
+        // JS to inject BEFORE page load: waits for DOM, updates content, adds close handler
+        let init_js = format!(
+            r#"document.addEventListener('DOMContentLoaded',function(){{
+                var t=document.getElementById('reminderTitle');
+                var p=document.getElementById('reminderPriority');
+                var d=document.getElementById('reminderDescription');
+                var b=document.getElementById('closeBtn');
+                if(t)t.textContent='{}';
+                if(p)p.textContent='{}';
+                if(d)d.textContent='{}';
+                if(b)b.onclick=function(){{location.href='{}://{}';}};
+            }});"#,
+            title_escaped, priority_text, desc_escaped, CLOSE_SCHEME, CLOSE_HOST
+        );
+
+        let result = WebviewWindowBuilder::new(
             &app_clone,
             &label_clone,
-            WebviewUrl::External(data_url.parse().unwrap())
+            WebviewUrl::App("reminder.html".into())
         )
-        .title(&title_clone)
+        .title(&window_title_clone)
         .inner_size(400.0, 250.0)
         .resizable(false)
         .decorations(true)
         .always_on_top(true)
+        .skip_taskbar(false)
         .center()
+        .initialization_script(&init_js)
+        .on_navigation(move |url| {
+            if *url == close_url_for_nav {
+                eprintln!("[scheduler] Intercepted close navigation");
+                if let Some(win) = app_for_nav.get_webview_window(&label_for_nav) {
+                    let _ = win.close();
+                }
+                false
+            } else {
+                true
+            }
+        })
         .build();
+
+        match result {
+            Ok(_win) => {
+                eprintln!("[scheduler] Reminder window created for reminder {}", reminder_id);
+            }
+            Err(e) => {
+                eprintln!("[scheduler] Failed to create reminder window for reminder {}: {}", reminder_id, e);
+            }
+        }
     });
 }

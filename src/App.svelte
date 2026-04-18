@@ -1430,22 +1430,28 @@
         {/if}
 
         <!-- 循环任务实例记录 -->
-        {#if selectedTemplate && templateInstances.length > 0}
+        {#if selectedTemplate}
           <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
             <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0;">📋 历史记录 - {selectedTemplate.title}</h3>
-            <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
-              {#each templateInstances as instance}
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: {instance.is_completed ? '#f0fdf4' : '#fef3c7'}; border-radius: 6px;">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 12px;">#{instance.instance_number}</span>
-                    <span style="font-size: 11px; color: #64748b;">{formatDate(instance.due_time)}</span>
+            {#if templateInstances.length > 0}
+              <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
+                {#each templateInstances as instance}
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: {instance.is_completed ? '#f0fdf4' : '#fef3c7'}; border-radius: 6px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <span style="font-size: 12px;">#{instance.instance_number}</span>
+                      <span style="font-size: 11px; color: #64748b;">{formatDate(instance.due_time)}</span>
+                    </div>
+                    <span style="font-size: 11px; font-weight: 600; color: {instance.is_completed ? '#22c55e' : '#f97316'};">
+                      {instance.is_completed ? '✓ 已完成' : '待完成'}
+                    </span>
                   </div>
-                  <span style="font-size: 11px; font-weight: 600; color: {instance.is_completed ? '#22c55e' : '#f97316'};">
-                    {instance.is_completed ? '✓ 已完成' : '待完成'}
-                  </span>
-                </div>
-              {/each}
-            </div>
+                {/each}
+              </div>
+            {:else}
+              <div style="text-align: center; padding: 16px; color: #94a3b8; font-size: 12px;">
+                暂无记录，等待调度器生成实例中...
+              </div>
+            {/if}
           </div>
         {/if}
       </div>

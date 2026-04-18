@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "任务提醒助手",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "identifier": "com.zj-jdbz.reminder",
   "build": {
     "beforeDevCommand": "npm run dev",

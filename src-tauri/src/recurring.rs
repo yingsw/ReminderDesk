@@ -385,11 +385,12 @@ fn get_completed_count(conn: &rusqlite::Connection, template_id: &str) -> Result
 }
 
 fn calculate_next_due(conn: &rusqlite::Connection, template_id: &str) -> Result<Option<String>, rusqlite::Error> {
+    let now = Local::now().to_rfc3339();
     conn.query_row(
         "SELECT due_time FROM recurring_instances
-         WHERE template_id = ?1 AND is_completed = 0
+         WHERE template_id = ?1 AND is_completed = 0 AND due_time > ?2
          ORDER BY due_time ASC LIMIT 1",
-        [template_id],
+        rusqlite::params![template_id, now],
         |row| row.get(0)
     ).optional()
 }
@@ -404,19 +405,18 @@ fn calculate_nth_occurrence(
 ) -> Option<DateTime<Local>> {
     match recurrence_type {
         "daily" => {
-            // 先尝试今天
             let today = base_date.date_naive();
-            if let Some(today_time) = today.and_hms_opt(time.hour(), time.minute(), 0)
+            if let Some(today_dt) = today.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())
             {
-                if today_time > *base_date || n > 0 {
-                    // 今天的时间还没过，或者不是第一次
+                if today_dt > *base_date {
+                    // 今天的时间还没过，从今天开始算
                     let date = today + Duration::days((n * interval) as i64);
                     return date.and_hms_opt(time.hour(), time.minute(), 0)
                         .and_then(|dt| dt.and_local_timezone(Local).single());
                 }
             }
-            // 今天的时间已过，从明天开始
+            // 今天的时间已过，从明天开始算
             let date = today + Duration::days(((n + 1) * interval) as i64);
             date.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())
@@ -488,17 +488,18 @@ fn calculate_nth_occurrence(
             }
         }
         "custom" => {
-            // 自定义间隔天数
             let today = base_date.date_naive();
-            if let Some(today_time) = today.and_hms_opt(time.hour(), time.minute(), 0)
+            if let Some(today_dt) = today.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())
             {
-                if today_time > *base_date || n > 0 {
+                if today_dt > *base_date {
+                    // 今天的时间还没过，从今天开始算
                     let date = today + Duration::days((n * interval) as i64);
                     return date.and_hms_opt(time.hour(), time.minute(), 0)
                         .and_then(|dt| dt.and_local_timezone(Local).single());
                 }
             }
+            // 今天的时间已过，从明天开始算
             let date = today + Duration::days(((n + 1) * interval) as i64);
             date.and_hms_opt(time.hour(), time.minute(), 0)
                 .and_then(|dt| dt.and_local_timezone(Local).single())

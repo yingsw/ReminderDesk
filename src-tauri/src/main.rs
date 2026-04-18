@@ -79,6 +79,8 @@ fn main() {
             recurring::get_recurring_instances,
             recurring::complete_recurring_instance,
             recurring::preview_next_occurrences,
+            // 关闭窗口
+            scheduler::close_reminder_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

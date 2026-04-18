@@ -1,6 +1,6 @@
 [package]
 name = "reminder-app"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 description = "任务提醒助手"
 authors = ["应圣卫 <浙江巨鼎包装有限公司>"]
@@ -9,7 +9,7 @@ authors = ["应圣卫 <浙江巨鼎包装有限公司>"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["tray-icon", "image-ico"] }
+tauri = { version = "2", features = ["tray-icon", "image-ico", "webview-data-url"] }
 tauri-plugin-notification = "2"
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
